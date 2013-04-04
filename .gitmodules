@@ -1,0 +1,3 @@
+[submodule "toolkit"]
+	path = toolkit
+	url = https://bastianalleier@github.com/kirbycms/toolkit
