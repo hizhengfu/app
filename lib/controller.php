@@ -50,9 +50,9 @@ class AppController {
    * Constructor
    * 
    * @param string $file The full path to the controller file
-   * @param object KirbyAppControllers a list of sibling controllers
+   * @param object AppControllers a list of sibling controllers
    */
-  public function __construct($file, KirbyAppControllers $siblings) {
+  public function __construct($file, AppControllers $siblings) {
 
     $this->file     = $file;
     $this->siblings = $siblings;
@@ -143,7 +143,7 @@ class AppController {
   /**
    * Returns the parent module
    * 
-   * @return object KirbyPanelModule
+   * @return object AppModule
    */
   public function module() {
     return $this->module;
@@ -156,7 +156,7 @@ class AppController {
    */
   public function action() {  
     $index  = $this->module()->singleController() ? 2 : 3;
-    $action = panel()->uri()->path($index);
+    $action = app()->uri()->path($index);
     return (empty($action)) ? $this->defaultAction : $action;
   }
 
@@ -170,7 +170,7 @@ class AppController {
     if(!is_null($format)) $this->format = $format;
 
     if(is_null($this->format)) {  
-      $extension = panel()->uri()->extension();
+      $extension = app()->uri()->extension();
       $this->format = (empty($extension) || $extension == 'php') ? 'html' : $extension;
     }
     
@@ -182,14 +182,14 @@ class AppController {
    * Returns the assigned layout object
    * 
    * @param string $path Smart path to change the layout
-   * @return object KirbyPanelLayout
+   * @return object AppLayout
    */
   public function layout($path = null) {
         
-    if(!is_null($path)) $this->layout = new KirbyPanelLayout($path, $this);
+    if(!is_null($path)) $this->layout = new AppLayout($path, $this);
     if(!is_null($this->layout)) return $this->layout;
         
-    return $this->layout = new KirbyPanelLayout($this->module->layout(), $this);
+    return $this->layout = new AppLayout($this->module->layout(), $this);
 
   }
 
@@ -197,25 +197,15 @@ class AppController {
    * Returns the view object
    * 
    * @param string $path Smart path to change the view
-   * @return object KirbyPanelView
+   * @return object AppView
    */
   public function view($path = null) {
 
-    if(!is_null($path)) return $this->view = new KirbyPanelView($path, $this);
+    if(!is_null($path)) return $this->view = new AppView($path, $this);
     if(!is_null($this->view)) return $this->view;
         
     return $this->view($this->module()->name() . ' > ' . $this->name() . ' > ' . $this->action());
 
-  }
-
-  /**
-   * Returns all info about the request
-   * 
-   * @return object KirbyRequest
-   */
-  public function request() {
-    if(!is_null($this->request)) return $this->request;
-    return $this->request = new KirbyRequest();
   }
 
   /**
@@ -227,7 +217,7 @@ class AppController {
    */
   public function params($key = null, $default = null) {       
     if(is_null($this->params)) {
-      $this->params = array_merge(panel()->uri()->params()->toArray(), $this->request()->get());    
+      $this->params = array_merge(app()->uri()->params()->toArray(), r::get());    
     }
     if(is_null($key)) return $this->params;
     return a::get($this->params, $key, $default);    
@@ -241,7 +231,7 @@ class AppController {
    * @return mixed If no type is specified this will return the last message
    */
   public function flash($type = false, $message = false) {
-    return panel()->flash($type, $message);  
+    return app()->flash($type, $message);  
   }
  
   /**
@@ -262,7 +252,7 @@ class AppController {
       $this->flash('notice', $options['notice']);
     }
                     
-    go(panel()->url($path));
+    go(app()->url($path));
 
   }
 
@@ -274,7 +264,7 @@ class AppController {
    * @return boolean
    */
   public function submitted($method = 'post') {
-    return ($this->request()->is($method) && panel()->csfr($this->request()->get('csfr'))) ? true : false;
+    return (r::is($method) && app()->csfr(r::get('csfr'))) ? true : false;
   }
 
   /**
@@ -312,7 +302,7 @@ class AppController {
     $layout = $this->layout();
     $layout->content = $this->view()->render();
     
-    return new KirbyAppResponse($layout->render(), $this->format());
+    return new AppResponse($layout->render(), $this->format());
 
   }
 

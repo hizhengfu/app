@@ -28,9 +28,6 @@ class App {
   // http or https
   protected $scheme = null;
   
-  // The current logged in app user
-  protected $user = null;
-
   /**
    * Constructor
    * 
@@ -53,16 +50,6 @@ class App {
   }
 
   /**
-   * Returns the currently logged in user object
-   * 
-   * @return object KirbyAppUser
-   */
-  public function user() {
-    if(!is_null($this->user)) return $this->user;
-    return $this->user = new KirbyAppUser();
-  }
-
-  /**
    * Returns the subfolder(s)
    * A subfolder will be auto-detected or can be set in the config file
    * If you run the site under its own domain, the subfolder will be empty
@@ -75,8 +62,9 @@ class App {
 
     // try to detect the subfolder      
     $subfolder = (c::get('app.subfolder') !== false) ? trim(c::get('app.subfolder'), '/') : trim(dirname(server::get('script_name')), '/\\');
-    
+
     c::set('app.subfolder', $subfolder);
+
     return $this->subfolder = $subfolder;
 
   }
@@ -91,7 +79,7 @@ class App {
 
     if(!is_null($this->uri)) return $this->uri;
 
-    return $this->uri = new KirbyUri(array(
+    return $this->uri = new Uri(array(
       'subfolder' => $this->subfolder(),
       'url'       => c::get('app.currentURL', null)
     ));
@@ -120,7 +108,7 @@ class App {
     if(is_null($this->url)) {
 
       // auto-detect the url if it is not set
-      $url = (c::get('panel.url') === false) ? $this->scheme() . '://' . $this->uri()->host() : rtrim(c::get('panel.url'), '/');
+      $url = (c::get('app.url') === false) ? $this->scheme() . '://' . $this->uri()->host() : rtrim(c::get('app.url'), '/');
 
       if($subfolder = $this->subfolder()) {
         // check if the url already contains the subfolder      
@@ -128,7 +116,7 @@ class App {
         if(!preg_match('!' . preg_quote($subfolder) . '$!i', $url)) $url .= '/' . $subfolder;      
       }
                     
-      c::set('panel.url', $url);  
+      c::set('app.url', $url);  
       $this->url = $url;
 
     }
@@ -164,7 +152,7 @@ class App {
    */
   public function modules() {
     if(!is_null($this->modules)) return $this->modules;
-    return $this->modules = new KirbyAppModules();
+    return $this->modules = new AppModules();
   }
 
   /**
@@ -173,15 +161,7 @@ class App {
    * @return object KirbyAppModule
    */
   public function defaultModule() {
-
-    if($this->user()->isLoggedIn()) {
-      $module = c::get('panel.modules.default', 'site');
-    } else {
-      $module = 'auth';
-    }
-
-    return $module;
-
+    return null;
   }
 
   /**
@@ -297,6 +277,10 @@ class App {
    */
   public function show() {
 
+    // run authentication
+    $this->authenticate();
+    
+    // find the current module and run it
     echo $this->modules()
               ->findActive()
               ->controllers()
@@ -314,6 +298,8 @@ class App {
    */
   protected function configure($params = array()) {
 
+    /*
+
     // load custom core config files
     f::load(ROOT_SITE_CONFIG . DS . 'config.php');
     f::load(ROOT_SITE_CONFIG . DS . 'config.' . server::get('server_name') . '.php');
@@ -330,6 +316,7 @@ class App {
 
     // store them again
     c::set($config);
+    */
 
   }
 
@@ -346,9 +333,13 @@ class App {
     if(c::get('app.locale')) setlocale(LC_ALL, c::get('app.locale'));
 
     // load the language: TODO replace with user language
-    require_once('languages/en.php');
+    f::load('languages/en.php');
 
   } 
+
+  protected function authenticate() {
+
+  }
 
 
 }

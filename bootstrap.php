@@ -10,9 +10,19 @@ if(!defined('KIRBY')) define('KIRBY', true);
 // store the directory separator in something simpler to use
 if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
 
-// store the main toolkit root
+// store the main panel root
 if(!defined('ROOT_KIRBY_APP'))     define('ROOT_KIRBY_APP',     dirname(__FILE__));
 if(!defined('ROOT_KIRBY_APP_LIB')) define('ROOT_KIRBY_APP_LIB', ROOT_KIRBY_APP . DS . 'lib');
+if(!defined('ROOT_KIRBY_TOOLKIT')) define('ROOT_KIRBY_TOOLKIT', ROOT_KIRBY_APP . DS . 'toolkit');
+
+// relative stuff
+if(!defined('ROOT_KIRBY_APP_MODULES')) define('ROOT_KIRBY_APP_MODULES', ROOT_KIRBY_APP . DS . 'modules');
+
+// define the main app class
+if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
+
+// load the toolkit
+include(ROOT_KIRBY_TOOLKIT . DS . 'bootstrap.php');
 
 /**
  * Loads all missing app classes on demand

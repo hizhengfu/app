@@ -31,14 +31,8 @@ class AppModule {
   // the module file
   protected $file = null;
 
-  /**
-   * Constructor
-   * 
-   * @param string $file The module file
-   */
-  public function __construct($file) {
-    $this->file = $file;
-  }
+  // show the module in menus 
+  protected $visible = true;
 
   /**
    * Returns the module name
@@ -73,7 +67,8 @@ class AppModule {
    * 
    * @return string
    */
-  public function file() {
+  public function file($file = null) {
+    if(!is_null($file)) return $this->file = $file;
     return $this->file;
   }
 
@@ -131,7 +126,7 @@ class AppModule {
   public function isActive() {
 
     $uri    = app()->uri();  
-    $module = $uri->path(0);
+    $module = $uri->path(1);
 
     if(empty($module)) $module = app()->defaultModule();
 
@@ -145,7 +140,7 @@ class AppModule {
    * @return boolean
    */
   public function isVisible() {
-    return $this->name() == 'shared' || $this->name() == 'auth' ? false : true;
+    return $this->visible;
   }
 
   /**

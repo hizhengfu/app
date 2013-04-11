@@ -17,16 +17,20 @@ class AppModules extends Collection {
    */
   public function __construct() {
 
-    $modules = dir::read(ROOT_APP_MODULES);
+    $modules = dir::read(ROOT_KIRBY_APP_MODULES);
 
     foreach($modules as $module) {
       
-      $file  = ROOT_APP_MODULES . DS . $module . DS . $module . '.php';
+      $file  = ROOT_KIRBY_APP_MODULES . DS . $module . DS . $module . '.php';
       $class = $module . 'module';
 
       if(file_exists($file)) {
         require_once($file);
-        $this->set($module, new $class($file));
+
+        $object = new $class();
+        $object->file($file);
+
+        $this->set($module, $object);
       }
     
     }
@@ -52,11 +56,13 @@ class AppModules extends Collection {
     $uri    = app()->uri();  
     $module = $uri->path(1);
 
-    if(empty($module)) $module = app()->defaultModule();
+    if(empty($module)) {
+      $module = app()->defaultModule();
+    } else {
+      $module = $this->$module;
+    }
 
-    $module = $this->$module;
-
-    if(!$module) app()->raise('Invalid module');
+    if(!$module) app()->raise('Invalid module: ' . $module);
 
     return $this->$module;
 
