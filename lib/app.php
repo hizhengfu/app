@@ -28,6 +28,9 @@ class App {
   // http or https
   protected $scheme = null;
   
+  // stores the current module
+  protected $module = null;
+
   /**
    * Constructor
    * 
@@ -156,6 +159,15 @@ class App {
   }
 
   /**
+   * Returns the current module
+   */
+  public function module() {
+    if(!is_null($this->module)) return $this->module;
+    // find the currently active module
+    return $this->module = $this->modules()->findActive();
+  }
+
+  /**
    * Returns the default module
    * 
    * @return object KirbyAppModule
@@ -249,7 +261,7 @@ class App {
     if(!$module) return false;
 
     $file = $module->root() . DS . 'snippets' . DS . $parts[1] . '.php';
-
+    
     return tpl::loadFile($file, $data, $return);
 
   }
@@ -281,11 +293,7 @@ class App {
     $this->authenticate();
     
     // find the current module and run it
-    echo $this->modules()
-              ->findActive()
-              ->controllers()
-              ->findActive()
-              ->response();
+    echo $this->module()->controller()->response();
 
   }
 
@@ -297,27 +305,7 @@ class App {
    * @param array $params An optional array of params, which should be merged
    */
   protected function configure($params = array()) {
-
-    /*
-
-    // load custom core config files
-    f::load(ROOT_SITE_CONFIG . DS . 'config.php');
-    f::load(ROOT_SITE_CONFIG . DS . 'config.' . server::get('server_name') . '.php');
-
-    // load custom panel config files
-    f::load(ROOT_SITE_APP_CONFIG . DS . 'config.php');
-    f::load(ROOT_SITE_APP_CONFIG . DS . 'config.' . server::get('server_name') . '.php');
-
-    // get all config options that have been stored so far
-    $defaults = c::get();
-
-    // merge them with the passed late options again
-    $config = array_merge($defaults, $params);
-
-    // store them again
-    c::set($config);
-    */
-
+    return false;
   }
 
   /**

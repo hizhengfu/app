@@ -19,3 +19,20 @@ function app($params = array()) {
   return $app;
 }
 
+/**
+ * Singleton getter for the current module
+ * 
+ * @return object Module
+ */
+function module() {
+  return app()->module();  
+}
+
+/**
+ * Singleton getter for the current controller
+ * 
+ * @return object Controller
+ */
+function controller() {
+  return module()->controller();
+}

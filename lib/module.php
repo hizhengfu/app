@@ -28,6 +28,9 @@ class AppModule {
   // a list of all available controllers
   protected $controllers = null;
   
+  // stores the current controller
+  protected $controller = null;
+
   // the module file
   protected $file = null;
 
@@ -77,8 +80,8 @@ class AppModule {
    * 
    * @return string
    */
-  public function url() {
-    return app()->url() . '/' . $this->name();
+  public function url($path = '') {
+    return rtrim(app()->url() . '/' . $this->name() . '/' . $path, '/');
   }
 
   /**
@@ -98,6 +101,16 @@ class AppModule {
   public function controllers() {
     if(!is_null($this->controllers)) return $this->controllers;
     return $this->controllers = new AppControllers($this);
+  }
+
+  /**
+   * Returns the currently active controller
+   * 
+   * @return object KirbyAppController
+   */
+  public function controller() {
+    if(!is_null($this->controller)) return $this->controller;
+    return $this->controller = $this->controllers()->findActive();
   }
 
   /**
@@ -141,6 +154,17 @@ class AppModule {
    */
   public function isVisible() {
     return $this->visible;
+  }
+
+  /**
+   * Shortcut to return snippets in controller actions
+   *
+   * @param string $snippet The name of the snippet
+   * @param array $data Optional data for the snippet
+   * @return string
+   */
+  public function snippet($snippet, $data = array()) {
+    return app()->snippet($snippet, $data, $return = true);
   }
 
   /**
