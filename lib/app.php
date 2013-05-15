@@ -23,7 +23,7 @@ class App {
   // Cache for the uri object
   protected $uri = null;
   
-  // Cache for the KirbyAppModules list
+  // Cache for the Modules list
   protected $modules = null;
   
   // The main url of the app
@@ -77,10 +77,10 @@ class App {
   }
 
   /**
-   * Returns the KirbyURI object, which can be used
+   * Returns the URI object, which can be used
    * to inspect and work with the current URL/URI
    * 
-   * @return object KirbyUri
+   * @return object Uri
    */
   public function uri($uri = null) {
 
@@ -110,7 +110,7 @@ class App {
    * 
    * @return string
    */
-  public function url($uri = null, $lang = false) {
+  public function url($uri = null) {
 
     if(is_null($this->url)) {
 
@@ -155,7 +155,7 @@ class App {
   /**
    * Returns a list with all available modules
    * 
-   * @return object KirbyAppModules
+   * @return object Modules
    */
   public function modules() {
     if(!is_null($this->modules)) return $this->modules;
@@ -174,7 +174,7 @@ class App {
   /**
    * Returns the default module
    * 
-   * @return object KirbyAppModule
+   * @return object Module
    */
   public function defaultModule() {
     return null;

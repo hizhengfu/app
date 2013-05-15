@@ -66,7 +66,7 @@ class Modules extends Collection {
       $module = $this->$module;
     }
 
-    if(!$module) app()->raise('Invalid module: ' . $module);
+    if(!$module) raise('Invalid module: ' . $module);
 
     return $this->$module;
 
