@@ -159,7 +159,7 @@ class App {
    */
   public function modules() {
     if(!is_null($this->modules)) return $this->modules;
-    return $this->modules = new AppModules();
+    return $this->modules = new Modules();
   }
 
   /**
