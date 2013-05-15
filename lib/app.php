@@ -320,4 +320,12 @@ class App {
 
   } 
 
+  /**
+   * Dummy authentication method
+   * Should be overwritten by the app
+   */
+  protected function authenticate() {
+    return false;
+  }
+
 }
