@@ -300,7 +300,7 @@ class App {
    * @param array $params An optional array of params, which should be merged
    */
   protected function configure($params = array()) {
-    return false;
+    c::set($params);
   }
 
   /**
