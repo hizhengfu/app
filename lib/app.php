@@ -316,13 +316,8 @@ class App {
     if(c::get('app.locale')) setlocale(LC_ALL, c::get('app.locale'));
 
     // load the language: TODO replace with user language
-    f::load('languages/en.php');
+    f::load('languages' . DS . 'en.php');
 
   } 
-
-  protected function authenticate() {
-
-  }
-
 
 }
