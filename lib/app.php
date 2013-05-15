@@ -328,4 +328,29 @@ class App {
     return false;
   }
 
+  /**
+   * A simple loader for collections, models and lib stuff
+   * from any module
+   * 
+   * @param string $path
+   */
+  public static function load($path) {
+
+    if(is_array($path)) {
+      foreach($path as $p) self::load($p);
+      return; 
+    }
+
+    $parts      = str::split($path, '>');
+    $moduleName = $parts[0]; 
+    $module     = app()->modules()->get($moduleName);
+
+    if(!$module) return false;
+
+    $file = $module->root() . DS . $parts[1] . '.php';
+
+    f::load($file);
+
+  }
+
 }
