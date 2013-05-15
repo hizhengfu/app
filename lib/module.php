@@ -6,7 +6,11 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
 /**
  * Module
  * 
- * @package Kirby App
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 class AppModule {
 
@@ -59,7 +63,7 @@ class AppModule {
   /**
    * Returns the default layout object
    * 
-   * @return object KirbyAppLayout
+   * @return object Layout
    */
   public function layout() {
     return $this->layout;
@@ -96,17 +100,17 @@ class AppModule {
   /**
    * Returns a list with all available controllers for this module
    * 
-   * @return object KirbyAppControllers
+   * @return object Controllers
    */
   public function controllers() {
     if(!is_null($this->controllers)) return $this->controllers;
-    return $this->controllers = new AppControllers($this);
+    return $this->controllers = new Controllers($this);
   }
 
   /**
    * Returns the currently active controller
    * 
-   * @return object KirbyAppController
+   * @return object Controller
    */
   public function controller() {
     if(!is_null($this->controller)) return $this->controller;

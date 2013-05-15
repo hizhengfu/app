@@ -8,9 +8,13 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * 
  * A list of all available modules for the app
  * 
- * @package Kirby App
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class AppModules extends Collection {
+class Modules extends Collection {
 
   /**
    * Constructor
@@ -40,7 +44,7 @@ class AppModules extends Collection {
   /**
    * Returns all visible modules
    * 
-   * @return object KirbyAppModules
+   * @return object Modules
    */
   public function visible() {
     return $this->filterBy('isVisible', true);
@@ -49,7 +53,7 @@ class AppModules extends Collection {
   /**
    * Returns the currently active module
    * 
-   * @return object KirbyAppModule
+   * @return object Module
    */
   public function findActive() {
 
@@ -71,7 +75,7 @@ class AppModules extends Collection {
   /**
    * Returns the default module, which should be used if no other is set in the url
    * 
-   * @return object KirbyAppModule
+   * @return object Module
    */
   public function findDefault() {
     $module = app()->defaultModule();

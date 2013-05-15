@@ -9,7 +9,11 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * The main object, which is used to retrieve all sub objects
  * and to organize some basic functionality
  * 
- * @package Kirby App
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 class App {
 
@@ -211,15 +215,6 @@ class App {
 
     s::set('flash', $flash);
 
-  }
-
-  /**
-   * Raises a KirbyAppException with a given message
-   * 
-   * @param string $message
-   */
-  public function raise($message) {
-    throw new Exception($message);
   }
 
   /**

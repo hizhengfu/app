@@ -9,9 +9,13 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * A list of all available controllers
  * for a particular module
  * 
- * @package Kirby App
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class AppControllers extends Collection {
+class Controllers extends Collection {
 
   // The parent module
   protected $module = null;
@@ -50,7 +54,7 @@ class AppControllers extends Collection {
   /**
    * Returns the parent module object
    * 
-   * @return object KirbyAppModule
+   * @return object Module
    */
   public function module() {
     return $this->module;
@@ -68,7 +72,7 @@ class AppControllers extends Collection {
   /**
    * Returns the currently active controller if available
    * 
-   * @return object KirbyAppController
+   * @return object Controller
    */
   public function findActive() {
 
@@ -79,7 +83,7 @@ class AppControllers extends Collection {
 
     $controller = $this->$controller;
 
-    if(!$controller) app()->raise('Invalid controller');
+    if(!$controller) raise('Invalid controller');
 
     return $this->$controller;
 
@@ -88,7 +92,7 @@ class AppControllers extends Collection {
   /**
    * Returns the default controller if no other controller can be found
    * 
-   * @return object KirbyAppController
+   * @return object Controller
    */
   public function findDefault() {
     $controller = $this->module()->defaultController();

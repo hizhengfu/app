@@ -9,24 +9,28 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * A layout is an extended view, which loads
  * a html layout skeleton from the layouts folder of a particular module.
  * 
- * @package Kirby App
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class AppLayout extends AppView {
+class Layout extends View {
 
   /**
    * Constructor
    * 
    * @param string $path The path to this layout
-   * @param object $controller The parent KirbyAppController
+   * @param object $controller The parent Controller
    */
-  public function __construct($path, AppController $controller) {
+  public function __construct($path, Controller $controller) {
 
     $this->path          = $path;
     $this->controller    = $controller; 
     $this->data          = array();
     $this->data['title'] = $this->controller->module()->title();
 
-    if(!file_exists($this->file())) app()->raise('The layout does not exist: ' . $this->file());
+    if(!file_exists($this->file())) raise('The layout does not exist: ' . $this->file());
 
   }
 
@@ -43,7 +47,7 @@ class AppLayout extends AppView {
     $module     = app()->modules()->get($moduleName);  
     $format     = $this->controller()->format();
 
-    if(!$module) app()->raise('The module could not be found: ' . $moduleName);
+    if(!$module) raise('The module could not be found: ' . $moduleName);
 
     $file = $module->root() . DS . 'layouts' . DS . implode(DS, $path) . '.' . $format . '.php';
 

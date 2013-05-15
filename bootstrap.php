@@ -2,27 +2,40 @@
 
 /**
  * Kirby App Bootstrapper
+ * 
+ * Include this file to load all essential 
+ * files to initiate a new Kirby App
+ * 
+ * @package   Kirby App
+ * @author    Bastian Allgeier <bastian@getkirby.com>
+ * @link      http://getkirby.com
+ * @copyright Bastian Allgeier
+ * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
-// direct access protection
-if(!defined('KIRBY')) define('KIRBY', true);
+/**
+ * Helper constants
+ */
 
-// store the directory separator in something simpler to use
-if(!defined('DS')) define('DS', DIRECTORY_SEPARATOR);
+if(!defined('KIRBY'))     define('KIRBY',     true);
+if(!defined('DS'))        define('DS',        DIRECTORY_SEPARATOR);
+if(!defined('MB_STRING')) define('MB_STRING', (int)function_exists('mb_get_info'));
 
-// store the main panel root
-if(!defined('ROOT_KIRBY_APP'))     define('ROOT_KIRBY_APP',     dirname(__FILE__));
-if(!defined('ROOT_KIRBY_APP_LIB')) define('ROOT_KIRBY_APP_LIB', ROOT_KIRBY_APP . DS . 'lib');
-if(!defined('ROOT_KIRBY_TOOLKIT')) define('ROOT_KIRBY_TOOLKIT', ROOT_KIRBY_APP . DS . 'toolkit');
+/**
+ * Overwritable constants
+ * Define them before including the bootstrapper
+ * to change essential roots
+ */
 
-// relative stuff
-if(!defined('ROOT_KIRBY_APP_MODULES')) define('ROOT_KIRBY_APP_MODULES', ROOT_KIRBY_APP . DS . 'modules');
+if(!defined('KIRBY_APP_ROOT'))         define('KIRBY_APP_ROOT',         dirname(__FILE__));
+if(!defined('KIRBY_APP_ROOT_LIB'))     define('KIRBY_APP_ROOT_LIB',     KIRBY_APP_ROOT . DS . 'lib');
+if(!defined('KIRBY_APP_ROOT_TOOLKIT')) define('KIRBY_APP_ROOT_TOOLKIT', KIRBY_APP_ROOT . DS . 'toolkit');
 
 // define the main app class
 if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
 
 // load the toolkit
-include(ROOT_KIRBY_TOOLKIT . DS . 'bootstrap.php');
+include(KIRBY_APP_ROOT_TOOLKIT . DS . 'bootstrap.php');
 
 /**
  * Loads all missing app classes on demand
@@ -31,14 +44,7 @@ include(ROOT_KIRBY_TOOLKIT . DS . 'bootstrap.php');
  * @return void
  */
 function appLoader($class) {
-
-  $file = ROOT_KIRBY_APP_LIB . DS . r($class == 'App', 'app', strtolower(str_replace('App', '', $class))) . '.php';
-
-  if(file_exists($file)) {
-    require_once($file);
-    return;
-  } 
-
+  f::load(KIRBY_APP_ROOT_LIB . DS . strtolower($class) . '.php');
 }
 
 // register the autoloader function
