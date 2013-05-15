@@ -12,7 +12,7 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class AppModule {
+class Module {
 
   // a default title which should be passed to the layout
   protected $title = null;

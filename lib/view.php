@@ -12,7 +12,7 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class AppView {
+class View {
 
   // all data assigned to the view
   protected $data = array();
@@ -30,14 +30,14 @@ class AppView {
    * Constructor
    * 
    * @param string $path
-   * @param object $controller AppController
+   * @param object $controller Controller
    */
-  public function __construct($path, AppController $controller) {
+  public function __construct($path, Controller $controller) {
 
     $this->path       = $path;
     $this->controller = $controller; 
 
-    if(!file_exists($this->file())) app()->raise('The view does not exist: ' . $this->file());
+    if(!file_exists($this->file())) raise('The view does not exist: ' . $this->file());
 
   }
 
@@ -83,7 +83,7 @@ class AppView {
   /**
    * Returns the parent controller object
    * 
-   * @return object KirbyAppController
+   * @return object Controller
    */
   public function controller() {
     return $this->controller;
@@ -102,7 +102,7 @@ class AppView {
     $module     = app()->modules()->get($moduleName);  
     $format     = $this->controller()->format();
 
-    if(!$module) app()->raise('The module could not be found: ' . $moduleName);
+    if(!$module) raise('The module could not be found: ' . $moduleName);
 
     $file = $module->root() . DS . 'views' . DS . implode(DS, $path) . '.' . $format . '.php';
 

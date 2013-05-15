@@ -21,11 +21,11 @@ class Modules extends Collection {
    */
   public function __construct() {
 
-    $modules = dir::read(ROOT_KIRBY_APP_MODULES);
+    $modules = dir::read(KIRBY_APP_ROOT_MODULES);
 
     foreach($modules as $module) {
       
-      $file  = ROOT_KIRBY_APP_MODULES . DS . $module . DS . $module . '.php';
+      $file  = KIRBY_APP_ROOT_MODULES . DS . $module . DS . $module . '.php';
       $class = $module . 'module';
 
       if(file_exists($file)) {

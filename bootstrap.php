@@ -31,6 +31,9 @@ if(!defined('KIRBY_APP_ROOT'))         define('KIRBY_APP_ROOT',         dirname(
 if(!defined('KIRBY_APP_ROOT_LIB'))     define('KIRBY_APP_ROOT_LIB',     KIRBY_APP_ROOT . DS . 'lib');
 if(!defined('KIRBY_APP_ROOT_TOOLKIT')) define('KIRBY_APP_ROOT_TOOLKIT', KIRBY_APP_ROOT . DS . 'toolkit');
 
+// set the location of your app modules with this constant
+if(!defined('KIRBY_APP_ROOT_MODULES')) define('KIRBY_APP_ROOT_MODULES', '');
+
 // define the main app class
 if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
 
@@ -51,7 +54,7 @@ function appLoader($class) {
 spl_autoload_register('appLoader');
 
 // load the default config values
-require_once(ROOT_KIRBY_APP . DS . 'defaults.php');
+require_once(KIRBY_APP_ROOT . DS . 'defaults.php');
 
 // load the helper functions
-require_once(ROOT_KIRBY_APP . DS . 'helpers.php');
+require_once(KIRBY_APP_ROOT . DS . 'helpers.php');
