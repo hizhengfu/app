@@ -22,13 +22,7 @@ class Module {
 
   // the relative path for the default layout
   protected $layout = 'shared > default';
-  
-  // the relative path for the default controller
-  protected $defaultController = 'home';
-  
-  // there can be single controller or multi controller modules
-  protected $singleController = false;
-  
+      
   // a list of all available controllers
   protected $controllers = null;
   
@@ -40,6 +34,13 @@ class Module {
 
   // show the module in menus 
   protected $visible = true;
+
+  /**
+   * Register all routes for this module
+   */
+  public function routes() {
+    return true;
+  }
 
   /**
    * Returns the module name
@@ -114,25 +115,7 @@ class Module {
    */
   public function controller() {
     if(!is_null($this->controller)) return $this->controller;
-    return $this->controller = $this->controllers()->findActive();
-  }
-
-  /**
-   * Returns the name of the default controller for this module
-   * 
-   * @return string
-   */
-  public function defaultController() {
-    return $this->defaultController;
-  }
-
-  /**
-   * Checks if this is a single controller module
-   * 
-   * @return boolean
-   */
-  public function singleController() {
-    return $this->singleController;
+    return $this->controller = ($this->isActive()) ? app()->controller() : null;
   }
 
   /**
@@ -141,14 +124,7 @@ class Module {
    * @return boolean
    */
   public function isActive() {
-
-    $uri    = app()->uri();  
-    $module = $uri->path(1);
-
-    if(empty($module)) $module = app()->defaultModule();
-
-    return $module == $this->name() ? true : false;
-
+    return app()->module()->name() == $this->name();
   }
 
   /**

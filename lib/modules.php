@@ -51,38 +51,6 @@ class Modules extends Collection {
   }
 
   /**
-   * Returns the currently active module
-   * 
-   * @return object Module
-   */
-  public function findActive() {
-
-    $uri    = app()->uri();  
-    $module = $uri->path(1);
-
-    if(empty($module)) {
-      $module = app()->defaultModule();
-    } else {
-      $module = $this->$module;
-    }
-
-    if(!$module) raise('Invalid module: ' . $module);
-
-    return $this->$module;
-
-  }
-
-  /**
-   * Returns the default module, which should be used if no other is set in the url
-   * 
-   * @return object Module
-   */
-  public function findDefault() {
-    $module = app()->defaultModule();
-    return $this->$module;
-  }
-
-  /**
    * Echos a list of all available modules
    * 
    * @return string

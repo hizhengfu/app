@@ -22,18 +22,27 @@ class App {
   
   // Cache for the uri object
   protected $uri = null;
-  
-  // Cache for the Modules list
-  protected $modules = null;
-  
+    
   // The main url of the app
   protected $url = null;
   
   // http or https
   protected $scheme = null;
+
+  // Cache for the Modules list
+  protected $modules = null;
   
   // stores the current module
   protected $module = null;
+
+  // stores the currently used controller
+  protected $controller = null;
+
+  // stores the called action
+  protected $action = null;
+
+  // stores the route
+  protected $route = null;
 
   /**
    * Constructor
@@ -53,7 +62,14 @@ class App {
     
     // apply localization and translation settings
     $this->localize();
-    
+
+  }
+
+  /**
+   * Placeholder for app classes to create global routes
+   */
+  public function routes() {
+    return true;
   }
 
   /**
@@ -166,18 +182,28 @@ class App {
    * Returns the current module
    */
   public function module() {
-    if(!is_null($this->module)) return $this->module;
-    // find the currently active module
-    return $this->module = $this->modules()->findActive();
+    return $this->module;
   }
 
   /**
-   * Returns the default module
-   * 
-   * @return object Module
+   * Returns the current controller
    */
-  public function defaultModule() {
-    return null;
+  public function controller() {
+    return $this->controller;
+  }
+
+  /**
+   * Returns the current action
+   */
+  public function action() {
+    return $this->action;
+  }
+
+  /**
+   * Returns the current route
+   */
+  public function route() {
+    return $this->route;
   }
 
   /**
@@ -280,15 +306,68 @@ class App {
   }
 
   /**
+   * Match the url to a module, controller and action
+   * 
+   * @return string The controller response
+   */
+  public function dispatch() {
+
+    // register all app routes
+    $this->routes();
+
+    // register all module routes
+    foreach($this->modules() as $module) {
+      $module->routes();      
+    }
+
+    // find the currently active route
+    $route = router::match($this->uri()->path());
+
+    // react on missing routes
+    if(!$route) raise('Not found: ' . $this->uri());
+
+    // store the used route
+    $this->route = $route;
+
+    $action     = $route->action();
+    $parts      = str::split($action, '>');
+    $moduleName = $parts[0]; 
+    $module     = $this->modules()->get($moduleName);
+
+    if(!$module) raise('Invalid module: ' . $moduleName);
+
+    // store the current module
+    $this->module = $module;
+
+    $actionParts    = str::split($parts[1], '::');
+    $controllerName = $actionParts[0];
+    $actionName     = $actionParts[1];      
+    $controller     = $module->controllers()->get($controllerName);
+
+    if(!$controller) raise('Invalid controller: ' . $controllerName);
+
+    // store the current controller and action
+    $this->controller = $controller;
+    $this->action     = $actionName;
+
+  }
+
+  /**
    * Renders the app html
    */
   public function show() {
 
-    // run authentication
+    // get the current user
+    $this->user();
+
+    // find the current controller
+    $this->dispatch();
+
+    // authenticate 
     $this->authenticate();
-    
-    // find the current module and run it
-    echo $this->module()->controller()->response();
+
+    // call the controller action
+    echo $this->controller()->call($this->action(), $this->route()->options());
 
   }
 
