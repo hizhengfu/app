@@ -327,53 +327,6 @@ class App {
   }
 
   /**
-   * Match the url to a module, controller and action
-   * 
-   * @return string The controller response
-   */
-  public function dispatch() {
-
-    // register all app routes
-    $this->routes();
-
-    // register all module routes
-    foreach($this->modules() as $module) {
-      $module->routes();      
-    }
-
-    // find the currently active route
-    $route = router::match($this->uri()->path());
-
-    // react on missing routes
-    if(!$route) raise('Not found: ' . $this->uri());
-
-    // store the used route
-    $this->route = $route;
-
-    $action     = $route->action();
-    $parts      = str::split($action, '>');
-    $moduleName = $parts[0]; 
-    $module     = $this->modules()->get($moduleName);
-
-    if(!$module) raise('Invalid module: ' . $moduleName);
-
-    // store the current module
-    $this->module = $module;
-
-    $actionParts    = str::split($parts[1], '::');
-    $controllerName = $actionParts[0];
-    $actionName     = $actionParts[1];      
-    $controller     = $module->controllers()->get($controllerName);
-
-    if(!$controller) raise('Invalid controller: ' . $controllerName);
-
-    // store the current controller and action
-    $this->controller = $controller;
-    $this->action     = $actionName;
-
-  }
-
-  /**
    * Renders the app html
    */
   public function show() {
