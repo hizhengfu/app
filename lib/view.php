@@ -128,6 +128,28 @@ class View {
     return $this->output;
             
   }
+
+  /**
+   * Includes a snippet from a smart path
+   * 
+   * @param string $path The smart path to the snippet
+   * @param array $data Optional data, which should be passed to the snippet
+   * @param boolean $return By default the snippet is echoed, but you can return the result by passing true here. 
+   * @return string
+   */
+  static public function snippet($path, $data = array(), $return = false) {
+
+    $parts      = str::split($path, '>');
+    $moduleName = $parts[0]; 
+    $module     = app()->modules()->get($moduleName);
+
+    if(!$module) return false;
+
+    $file = $module->root() . DS . 'snippets' . DS . $parts[1] . '.php';
+    
+    return tpl::loadFile($file, $data, $return);
+
+  }
  
   /**
    * Echos the html for this view

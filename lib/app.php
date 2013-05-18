@@ -169,6 +169,24 @@ class App {
   }
 
   /**
+   * Returns the full root for a smart path (tm)
+   * 
+   * @param string $path 
+   * @return string
+   */
+  public function root($path) {
+
+    $parts      = str::split($path, '>');
+    $moduleName = $parts[0]; 
+    $module     = $this->modules()->get($moduleName);
+
+    if(!$module) return false;
+
+    return $module->root() . DS . $parts[1];
+
+  }
+
+  /**
    * Returns a list with all available modules
    * 
    * @return object Modules
@@ -193,7 +211,7 @@ class App {
   }
 
   /**
-   * Returns the current action
+   * Returns the current route
    */
   public function action() {
     return $this->action;
@@ -244,50 +262,6 @@ class App {
   }
 
   /**
-   * Embeds css by url
-   * 
-   * @param string $url the relative or absolute url
-   * @param string $media An optional media string
-   * @return string
-   */
-  public function css($url, $media = null) {
-    return html::stylesheet($this->url($url), $media);
-  }
-
-  /**
-   * Embeds js by url
-   * 
-   * @param string $url the relative or absolute url
-   * @param boolean $async Optionally the js tag can include the new async attribute
-   * @return string
-   */
-  public function js($url, $async = false) {
-    return html::script($this->url($url), $async);
-  }
-
-  /**
-   * Includes a snippet from a smart path
-   * 
-   * @param string $path The smart path to the snippet
-   * @param array $data Optional data, which should be passed to the snippet
-   * @param boolean $return By default the snippet is echoed, but you can return the result by passing true here. 
-   * @return string
-   */
-  public function snippet($path, $data = array(), $return = false) {
-
-    $parts      = str::split($path, '>');
-    $moduleName = $parts[0]; 
-    $module     = $this->modules()->get($moduleName);
-
-    if(!$module) return false;
-
-    $file = $module->root() . DS . 'snippets' . DS . $parts[1] . '.php';
-    
-    return tpl::loadFile($file, $data, $return);
-
-  }
-
-  /**
    * Checks / returns a csfr token
    * 
    * @param string $check Pass a token here to compare it to the one in the session
@@ -302,6 +276,53 @@ class App {
     }
 
     return ($check === s::get('csfr')) ? true : false;
+
+  }
+
+  /**
+   * Match the url to a module, controller and action
+   * 
+   * @return string The controller response
+   */
+  public function dispatch() {
+
+    // register all app routes
+    $this->routes();
+
+    // register all module routes
+    foreach($this->modules() as $module) {
+      $module->routes();      
+    }
+
+    // find the currently active route
+    $route = router::match($this->uri()->path());
+
+    // react on missing routes
+    if(!$route) raise('Not found: ' . $this->uri());
+
+    // store the used route
+    $this->route = $route;
+
+    $action     = $route->action();
+    $parts      = str::split($action, '>');
+    $moduleName = $parts[0]; 
+    $module     = $this->modules()->get($moduleName);
+
+    if(!$module) raise('Invalid module: ' . $moduleName);
+
+    // store the current module
+    $this->module = $module;
+
+    $actionParts    = str::split($parts[1], '::');
+    $controllerName = $actionParts[0];
+    $actionName     = $actionParts[1];      
+    $controller     = $module->controllers()->get($controllerName);
+
+    if(!$controller) raise('Invalid controller: ' . $controllerName);
+
+    // store the current controller and action
+    $this->controller = $controller;
+    $this->action     = $actionName;
 
   }
 
@@ -420,15 +441,7 @@ class App {
       return; 
     }
 
-    $parts      = str::split($path, '>');
-    $moduleName = $parts[0]; 
-    $module     = app()->modules()->get($moduleName);
-
-    if(!$module) return false;
-
-    $file = $module->root() . DS . $parts[1] . '.php';
-
-    f::load($file);
+    f::load(app()->root($path . '.php'));
 
   }
 

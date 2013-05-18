@@ -337,14 +337,15 @@ class Controller {
   }
 
   /**
-   * Shortcut to return snippets in controller actions
-   *
-   * @param string $snippet The name of the snippet
-   * @param array $data Optional data for the snippet
+   * Shortcut to work with snippets in controllers
+   * 
+   * @param string $path 
+   * @param array $data
+   * @param boolean $return
    * @return string
    */
-  public function snippet($snippet, $data = array()) {
-    return app()->snippet($snippet, $data, $return = true);
+  public function snippet($path, $data = array(), $return = true) {
+    return view::snippet($path, $data, $return);
   }
 
   /**
