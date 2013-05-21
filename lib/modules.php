@@ -42,15 +42,6 @@ class Modules extends Collection {
   }
 
   /**
-   * Returns all visible modules
-   * 
-   * @return object Modules
-   */
-  public function visible() {
-    return $this->filterBy('isVisible', true);
-  }
-
-  /**
    * Echos a list of all available modules
    * 
    * @return string

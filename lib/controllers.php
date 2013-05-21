@@ -70,36 +70,6 @@ class Controllers extends Collection {
   }
 
   /**
-   * Returns the currently active controller if available
-   * 
-   * @return object Controller
-   */
-  public function findActive() {
-
-    $uri        = app()->uri();  
-    $controller = $uri->path(2);
-
-    if(empty($controller) || $this->module()->singleController()) $controller = $this->module()->defaultController();
-
-    $controller = $this->$controller;
-
-    if(!$controller) raise('Invalid controller');
-
-    return $this->$controller;
-
-  }
-
-  /**
-   * Returns the default controller if no other controller can be found
-   * 
-   * @return object Controller
-   */
-  public function findDefault() {
-    $controller = $this->module()->defaultController();
-    return $this->$controller;
-  }
-
-  /**
    * Echos a list of all available controllers
    * 
    * @return string

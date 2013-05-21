@@ -32,9 +32,6 @@ class Module {
   // the module file
   protected $file = null;
 
-  // show the module in menus 
-  protected $visible = true;
-
   /**
    * Register all routes for this module
    */
@@ -73,6 +70,7 @@ class Module {
   /**
    * Returns the full path to the module file
    * 
+   * @param string $file Optional argument to use this as setter
    * @return string
    */
   public function file($file = null) {
@@ -83,6 +81,7 @@ class Module {
   /**
    * Returns the main module url
    * 
+   * @param string $path Optional path for the module url
    * @return string
    */
   public function url($path = '') {
@@ -119,21 +118,12 @@ class Module {
   }
 
   /**
-   * Checks if this controller is currently active
+   * Checks if this module is currently active
    * 
    * @return boolean
    */
   public function isActive() {
     return app()->module()->name() == $this->name();
-  }
-
-  /**
-   * Checks if this controller is visible
-   * 
-   * @return boolean
-   */
-  public function isVisible() {
-    return $this->visible;
   }
 
   /**

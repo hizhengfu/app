@@ -37,9 +37,6 @@ class Controller {
   
   // the assigned layout
   protected $layout = null;
-    
-  // available params from the request
-  protected $params = null;
   
   // the assigned view
   protected $view = null;
@@ -196,21 +193,6 @@ class Controller {
   }
 
   /**
-   * Returns all params from the request
-   * 
-   * @param string $key The method only returns a specific key if this is set
-   * @param mixed $default An optional default value if the specific key cannot be found
-   * @return mixed
-   */
-  public function params($key = null, $default = null) {       
-    if(is_null($this->params)) {
-      $this->params = array_merge(app()->uri()->params()->toArray(), r::get());    
-    }
-    if(is_null($key)) return $this->params;
-    return a::get($this->params, $key, $default);    
-  }
-
-  /**
    * Stores a flash message to be re-used in the next request
    * 
    * @param string $type a type for the flash message if you want to use this as setter. This makes it possible to store different flash messages for different types of stuff (error, notice, etc.)
@@ -329,9 +311,13 @@ class Controller {
     // run the action
     call_user_func_array(array($this, $action), $options);
 
+    // get the current layout
     $layout = $this->layout();
-    $layout->content = $this->view()->render();
     
+    // apply the content 
+    $layout->content = $this->view()->render();
+
+    // return the response object       
     return new Response($layout->render(), $this->format());
 
   }

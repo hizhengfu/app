@@ -116,17 +116,8 @@ class View {
    * @return string
    */
   public function render() {
-
-    $data = array_merge($this->data, $this->controller->data());
-      
-    ob_start();
-    extract($data);
-    require_once($this->file());    
-    $this->output = ob_get_contents();    
-    ob_end_clean();    
-    
-    return $this->output;
-            
+    $data = array_merge($this->data, $this->controller->data());      
+    return $this->output = content::load($this->file(), $data);
   }
 
   /**

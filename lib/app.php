@@ -95,7 +95,7 @@ class App {
    * 
    * @return object Uri
    */
-  public function uri($uri = null) {
+  public function uri() {
 
     if(!is_null($this->uri)) return $this->uri;
 
@@ -121,6 +121,7 @@ class App {
    * The url is auto-detected by default and can 
    * also be set in the config like the subfolder
    * 
+   * @param string $uri Optional path for the URL
    * @return string
    */
   public function url($uri = null) {
@@ -195,6 +196,8 @@ class App {
 
   /**
    * Returns the current module
+   * 
+   * @return object Module
    */
   public function module() {
     return $this->module;
@@ -202,6 +205,8 @@ class App {
 
   /**
    * Returns the current controller
+   * 
+   * @return object Controller
    */
   public function controller() {
     return $this->controller;
@@ -209,6 +214,8 @@ class App {
 
   /**
    * Returns the current route
+   * 
+   * @return string
    */
   public function action() {
     return $this->action;
@@ -216,6 +223,8 @@ class App {
 
   /**
    * Returns the current route
+   * 
+   * @return object Route
    */
   public function route() {
     return $this->route;

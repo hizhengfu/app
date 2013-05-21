@@ -39,12 +39,7 @@ class Response {
    * Sends the correct header for the response
    */
   public function header() {
-
-    $formats = c::get('app.response.formats');
-    $mime    = a::get($formats, $this->format);
-
-    if($mime) header('Content-type: ' . $mime);
-
+    content::type($this->format);
   }
 
   /**
