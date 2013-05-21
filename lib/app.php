@@ -60,9 +60,6 @@ class App {
     // load all configs 
     $this->configure($params);
     
-    // apply localization and translation settings
-    $this->localize();
-
   }
 
   /**
@@ -340,6 +337,9 @@ class App {
     // authenticate 
     $this->authenticate();
 
+    // apply localization and translation settings
+    $this->localize();
+
     // call the controller action
     echo $this->controller()->call($this->action(), $this->route()->options());
 
@@ -364,12 +364,6 @@ class App {
     // set the timezone to make sure we 
     // avoid errors in php 5.3
     @date_default_timezone_set(c::get('app.timezone', 'UTC'));
-
-    // set default locale settings for php functions
-    if(c::get('app.locale')) setlocale(LC_ALL, c::get('app.locale'));
-
-    // load the language: TODO replace with user language
-    f::load('languages' . DS . 'en.php');
 
   } 
 
