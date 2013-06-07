@@ -1,5 +1,9 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\F;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
@@ -52,7 +56,6 @@ class Controller {
     $this->file     = $file;
     $this->siblings = $siblings;
     $this->module   = $siblings->module();
-    $this->layout   = $this->layout();
 
   }
 
@@ -155,7 +158,7 @@ class Controller {
 
     if(is_null($this->format)) {  
       $extension = app()->uri()->extension();
-      $this->format = (empty($extension) || $extension == 'php') ? 'html' : $extension;
+      $this->format = (empty($extension) or $extension == 'php') ? 'html' : $extension;
     }
     
     return $this->format;
@@ -204,25 +207,12 @@ class Controller {
   }
  
   /**
-   * Redirects to a different path and optionally stores a flash message
+   * Redirects to a different path
    * 
    * @param string $path A relative path to redirect to
-   * @param array $params Optional params to store a flash message
    */
-  public function redirect($path = '', $params = array()) {
-    
-    $defaults = array(
-      'notice' => false
-    );
-          
-    $options = array_merge($defaults, $params);
-    
-    if($options['notice']) {
-      $this->flash('notice', $options['notice']);
-    }
-                    
+  public function redirect($path = '') {                                  
     go(app()->url($path));
-
   }
 
   /**

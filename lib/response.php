@@ -1,10 +1,16 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\Content;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * Response
+ * 
+ * Represents any response coming from a controller's action and takes care of sending an appropriate header
  *  
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -31,15 +37,31 @@ class Response {
     $this->content = $content;
     $this->format  = $format;
 
-    $this->header();
-
   }
 
   /**
    * Sends the correct header for the response
    */
-  public function header() {
-    content::type($this->format);
+  public function header($send = true) {
+    return content::type($this->format, 'utf-8', $send);
+  }
+
+  /**
+   * Returns the content of this response
+   * 
+   * @return string
+   */
+  public function content() {
+    return $this->content;
+  }
+
+  /**
+   * Returns the content format
+   * 
+   * @return string
+   */
+  public function format() {
+    return $this->format;
   }
 
   /**

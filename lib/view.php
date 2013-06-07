@@ -1,10 +1,21 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\Content;
+use Kirby\Toolkit\Str;
+use Kirby\Toolkit\Tpl;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * View
+ * 
+ * Views are located in each module in a dedicated views folder and each 
+ * controller has its own subfolder with views for every action and request format.
+ * You can pass any accessible data to the view object and the class will 
+ * take care of rendering views and passing that data. 
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -99,7 +110,7 @@ class View {
     // site > dashboard > edit
     $path       = str::split($this->path, '>'); 
     $moduleName = array_shift($path);
-    $module     = app()->modules()->get($moduleName);  
+    $module     = app()->modules()->get(strtolower($moduleName));  
     $format     = $this->controller()->format();
 
     if(!$module) raise('The module could not be found: ' . $moduleName);

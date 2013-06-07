@@ -1,10 +1,19 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\Str;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * Module
+ * 
+ * This is the base class for all modules. Extend this to create new modules 
+ * and get basic module functionalities. Module classes are located in a 
+ * dedicated module subfolder. Make sure the name of the module class file 
+ * is identical with the module name. 
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -21,7 +30,7 @@ class Module {
   protected $name = null;
 
   // the relative path for the default layout
-  protected $layout = 'shared > default';
+  protected $layout = null;
       
   // a list of all available controllers
   protected $controllers = null;
@@ -76,16 +85,6 @@ class Module {
   public function file($file = null) {
     if(!is_null($file)) return $this->file = $file;
     return $this->file;
-  }
-
-  /**
-   * Returns the main module url
-   * 
-   * @param string $path Optional path for the module url
-   * @return string
-   */
-  public function url($path = '') {
-    return rtrim(app()->url() . '/' . $this->name() . '/' . $path, '/');
   }
 
   /**

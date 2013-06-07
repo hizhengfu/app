@@ -22,12 +22,29 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 c::set(array(
-
-  // app version
+  
+  /**
+   * human readable app version 
+   */
   'app.version.string' => '1.0',
+
+  /**
+   * numeric app version 
+   */
   'app.version.number' => 1.0,
 
-  'app.url'       => false,
-  'app.subfolder' => false
+  /**
+   * the base url for the app
+   * leave this set to false for 
+   * url auto-detection
+   */
+  'app.url' => false,
+  
+  /**
+   * if the app is installed in a subfolder
+   * and the subfolder is not detected correctly
+   * set the subfolder here
+   */
+  'app.subfolder' => false,
 
 ));

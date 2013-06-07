@@ -1,13 +1,17 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\Dir;
+use Kirby\Toolkit\Collection;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * Controllers
  * 
- * A list of all available controllers
- * for a particular module
+ * A list of all available controllers for a particular module.
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -76,7 +80,7 @@ class Controllers extends Collection {
    */
   public function __toString() {
     $html = array();
-    foreach($this->_ as $controller) $html[] = (string)$controller;
+    foreach($this->data as $controller) $html[] = (string)$controller;
     return implode('<br />', $html);
   }
 

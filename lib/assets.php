@@ -1,10 +1,14 @@
 <?php
 
+namespace Kirby\App;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * Assets
+ * 
+ * The assets class makes it easy to include css and js files from your modules in your views and layouts
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>

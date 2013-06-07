@@ -1,4 +1,6 @@
 # Kirby App Changelog
 
-## 1
+## 1 
+
+First release
 

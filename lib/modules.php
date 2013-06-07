@@ -1,12 +1,18 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\Collection;
+use Kirby\Toolkit\Dir;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
  * Modules
  * 
- * A list of all available modules for the app
+ * A list of all available modules for the app. 
+ * You can use this to access any module and any controller in a module. 
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -34,7 +40,7 @@ class Modules extends Collection {
         $object = new $class();
         $object->file($file);
 
-        $this->set($module, $object);
+        $this->set(strtolower($module), $object);
       }
     
     }
@@ -48,7 +54,7 @@ class Modules extends Collection {
    */
   public function __toString() {
     $html = array();
-    foreach($this->_ as $module) $html[] = (string)$module;
+    foreach($this->data as $module) $html[] = (string)$module;
     return implode('<br />', $html);
   }
 

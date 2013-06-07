@@ -40,18 +40,30 @@ if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
 // load the toolkit
 include(KIRBY_APP_ROOT_TOOLKIT . DS . 'bootstrap.php');
 
-/**
- * Loads all missing app classes on demand
- * 
- * @param string $class The name of the missing class
- * @return void
- */
-function appLoader($class) {
-  f::load(KIRBY_APP_ROOT_LIB . DS . strtolower($class) . '.php');
-}
+// initialize the autoloader
+$autoloader = new Kirby\Toolkit\Autoloader();
 
-// register the autoloader function
-spl_autoload_register('appLoader');
+// set the base root where all classes are located
+$autoloader->root = KIRBY_APP_ROOT_LIB;
+
+// set the global namespace for all classes
+$autoloader->namespace = 'Kirby\\App';
+
+// add all needed aliases
+$autoloader->aliases = array(
+  'app'         => 'Kirby\\App\\App',
+  'assets'      => 'Kirby\\App\\Assets',
+  'controller'  => 'Kirby\\App\\Controller',
+  'controllers' => 'Kirby\\App\\Controllers',
+  'layout'      => 'Kirby\\App\\Layout',
+  'module'      => 'Kirby\\App\\Module',
+  'modules'     => 'Kirby\\App\\Modules',
+  'response'    => 'Kirby\\App\\Response',
+  'view'        => 'Kirby\\App\\View',
+);
+
+// start autoloading
+$autoloader->start();
 
 // load the default config values
 require_once(KIRBY_APP_ROOT . DS . 'defaults.php');

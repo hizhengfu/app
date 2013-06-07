@@ -1,5 +1,15 @@
 <?php
 
+namespace Kirby\App;
+
+use Kirby\Toolkit\C;
+use Kirby\Toolkit\F;
+use Kirby\Toolkit\Router;
+use Kirby\Toolkit\S;
+use Kirby\Toolkit\Server;
+use Kirby\Toolkit\Str;
+use Kirby\Toolkit\URI;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
@@ -7,7 +17,12 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * App
  * 
  * The main object, which is used to retrieve all sub objects
- * and to organize some basic functionality
+ * and to organize some basic functionality. Extend this from your own 
+ * app class and define the KIRBY_APP_CLASS constant with the name of your 
+ * class to use the global app() singleton helper.
+ * 
+ * Make sure to check out methods of this class and overwrite them in your
+ * app class to have a convenient app initializer. 
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -350,7 +365,13 @@ class App {
     $this->localize();
 
     // call the controller action
-    echo $this->controller()->call($this->action(), $this->route()->options());
+    $response = $this->controller()->call($this->action(), $this->route()->options());
+
+    // send the response header
+    $response->header();
+
+    // echo the generated result
+    echo $response->content();
 
   }
 
