@@ -3,6 +3,7 @@
 namespace Kirby\App;
 
 use Kirby\Toolkit\F;
+use Kirby\Toolkit\R;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -56,6 +57,7 @@ class Controller {
     $this->file     = $file;
     $this->siblings = $siblings;
     $this->module   = $siblings->module();
+    $this->layout   = $this->layout();
 
   }
 

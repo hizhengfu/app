@@ -13,6 +13,9 @@
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 
+// check for an existing toolkit
+if(!defined('KIRBY_TOOLKIT_ROOT')) die('The Kirby Toolkit is required for the Kirby App Framework');
+
 /**
  * Helper constants
  */
@@ -27,18 +30,14 @@ if(!defined('MB_STRING')) define('MB_STRING', (int)function_exists('mb_get_info'
  * to change essential roots
  */
 
-if(!defined('KIRBY_APP_ROOT'))         define('KIRBY_APP_ROOT',         dirname(__FILE__));
-if(!defined('KIRBY_APP_ROOT_LIB'))     define('KIRBY_APP_ROOT_LIB',     KIRBY_APP_ROOT . DS . 'lib');
-if(!defined('KIRBY_APP_ROOT_TOOLKIT')) define('KIRBY_APP_ROOT_TOOLKIT', KIRBY_APP_ROOT . DS . 'toolkit');
+if(!defined('KIRBY_APP_ROOT'))     define('KIRBY_APP_ROOT',     dirname(__FILE__));
+if(!defined('KIRBY_APP_ROOT_LIB')) define('KIRBY_APP_ROOT_LIB', KIRBY_APP_ROOT . DS . 'lib');
 
 // set the location of your app modules with this constant
 if(!defined('KIRBY_APP_ROOT_MODULES')) define('KIRBY_APP_ROOT_MODULES', '');
 
 // define the main app class
 if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
-
-// load the toolkit
-include(KIRBY_APP_ROOT_TOOLKIT . DS . 'bootstrap.php');
 
 // initialize the autoloader
 $autoloader = new Kirby\Toolkit\Autoloader();

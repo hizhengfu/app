@@ -46,6 +46,8 @@ class Layout extends View {
    * @return string
    */
   public function file() {
+
+    if(empty($this->path)) raise('Invalid layout path');
     
     // site > default
     $path       = str::split($this->path, '>'); 

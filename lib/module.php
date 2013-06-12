@@ -138,6 +138,16 @@ class Module {
   }
 
   /**
+   * Dummy method to return the base url of the module
+   * Set this in your model class
+   * 
+   * @return false   
+   */
+  public function url() {
+    return false;
+  }
+
+  /**
    * Echos the name of the controller
    * 
    * @return string

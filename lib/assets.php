@@ -2,6 +2,9 @@
 
 namespace Kirby\App;
 
+use Kirby\Toolkit\F;
+use Kirby\Toolkit\HTML;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
