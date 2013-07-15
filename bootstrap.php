@@ -50,7 +50,7 @@ $autoloader->namespace = 'Kirby\\App';
 
 // add all needed aliases
 $autoloader->aliases = array(
-  'app'         => 'Kirby\\App\\App',
+  'app'         => 'Kirby\\App',
   'assets'      => 'Kirby\\App\\Assets',
   'controller'  => 'Kirby\\App\\Controller',
   'controllers' => 'Kirby\\App\\Controllers',
@@ -63,6 +63,9 @@ $autoloader->aliases = array(
 
 // start autoloading
 $autoloader->start();
+
+// load the app class
+require_once(KIRBY_APP_ROOT . DS . 'app.php');
 
 // load the default config values
 require_once(KIRBY_APP_ROOT . DS . 'defaults.php');

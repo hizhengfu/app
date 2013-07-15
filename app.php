@@ -1,6 +1,6 @@
 <?php
 
-namespace Kirby\App;
+namespace Kirby;
 
 use Kirby\Toolkit\C;
 use Kirby\Toolkit\F;
@@ -9,6 +9,7 @@ use Kirby\Toolkit\S;
 use Kirby\Toolkit\Server;
 use Kirby\Toolkit\Str;
 use Kirby\Toolkit\URI;
+use Kirby\App\Modules;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
