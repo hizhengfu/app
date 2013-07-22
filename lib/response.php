@@ -109,4 +109,12 @@ class Response {
 
   }
 
+  /**
+   * Converts an array to json and returns it properly
+   * 
+   */
+  static public function json($array) {
+    return new static(json_encode($array), 'json');
+  }
+
 }
