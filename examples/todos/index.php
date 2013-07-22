@@ -6,9 +6,8 @@ require('../../../toolkit/bootstrap.php');
 // load the kirby app framework
 require('../../bootstrap.php');
 
-// define some constants
-define('KIRBY_TODOS_ROOT',      __DIR__);
-define('KIRBY_TODOS_ROOT_DATA', KIRBY_TODOS_ROOT . DS . 'data');
+// load the config
+require('config.php');
 
 // install modules
 app::modules(__DIR__ . DS . 'modules');

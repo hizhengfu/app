@@ -14,16 +14,3 @@ class Todo extends Model {
   } 
 
 }
-
-
-
-
-$todo = new todo();
-
-if($todo->save()) {
-  redirect::home();
-} else {
-  dump($todo->errors());
-}
-
-
