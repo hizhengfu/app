@@ -32,19 +32,12 @@ c::set(array(
    * numeric app version 
    */
   'app.version.number' => 1.0,
-
-  /**
-   * the base url for the app
-   * leave this set to false for 
-   * url auto-detection
-   */
-  'app.url' => false,
   
   /**
    * if the app is installed in a subfolder
    * and the subfolder is not detected correctly
    * set the subfolder here
    */
-  'app.subfolder' => false,
+  'app.subfolder' => '@auto',
 
 ));

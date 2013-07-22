@@ -17,27 +17,13 @@
 if(!defined('KIRBY_TOOLKIT_ROOT')) die('The Kirby Toolkit is required for the Kirby App Framework');
 
 /**
- * Helper constants
- */
-
-if(!defined('KIRBY'))     define('KIRBY',     true);
-if(!defined('DS'))        define('DS',        DIRECTORY_SEPARATOR);
-if(!defined('MB_STRING')) define('MB_STRING', (int)function_exists('mb_get_info'));
-
-/**
  * Overwritable constants
  * Define them before including the bootstrapper
  * to change essential roots
  */
 
-if(!defined('KIRBY_APP_ROOT'))     define('KIRBY_APP_ROOT',     dirname(__FILE__));
+if(!defined('KIRBY_APP_ROOT'))     define('KIRBY_APP_ROOT',     __DIR__);
 if(!defined('KIRBY_APP_ROOT_LIB')) define('KIRBY_APP_ROOT_LIB', KIRBY_APP_ROOT . DS . 'lib');
-
-// set the location of your app modules with this constant
-if(!defined('KIRBY_APP_ROOT_MODULES')) define('KIRBY_APP_ROOT_MODULES', '');
-
-// define the main app class
-if(!defined('KIRBY_APP_CLASS')) define('KIRBY_APP_CLASS', 'App');
 
 // initialize the autoloader
 $autoloader = new Kirby\Toolkit\Autoloader();
@@ -49,15 +35,14 @@ $autoloader->root = KIRBY_APP_ROOT_LIB;
 $autoloader->namespace = 'Kirby\\App';
 
 // add all needed aliases
-$autoloader->aliases = array(
+$autoloader->aliases = array(  
   'app'         => 'Kirby\\App',
-  'assets'      => 'Kirby\\App\\Assets',
   'controller'  => 'Kirby\\App\\Controller',
-  'controllers' => 'Kirby\\App\\Controllers',
   'layout'      => 'Kirby\\App\\Layout',
   'module'      => 'Kirby\\App\\Module',
-  'modules'     => 'Kirby\\App\\Modules',
+  'redirect'    => 'Kirby\\App\\Redirect',
   'response'    => 'Kirby\\App\\Response',
+  'snippet'     => 'Kirby\\App\\Snippet',
   'view'        => 'Kirby\\App\\View',
 );
 
@@ -69,6 +54,3 @@ require_once(KIRBY_APP_ROOT . DS . 'app.php');
 
 // load the default config values
 require_once(KIRBY_APP_ROOT . DS . 'defaults.php');
-
-// load the helper functions
-require_once(KIRBY_APP_ROOT . DS . 'helpers.php');

@@ -9,12 +9,10 @@ use Kirby\App;
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
 /**
- * Layout
+ * Snippet
  * 
- * A layout is an extended view, which loads
- * a html layout skeleton from the layouts folder of a particular module.
- * You can use layouts to create boilerplates for complex html documents.
- * Views will become smaller if you outsource global stuff to layouts. 
+ * A snippet is a code partial, which can be shared between
+ * views and layouts. Snippets are located in the {module}/snippets folder
  * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
@@ -22,13 +20,13 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class Layout extends View {
+class Snippet extends View {
 
   // registered filters for layouts
   static public $filters = array();
 
   /**
-   * Returns the full path to the layout file
+   * Returns the full path to the snippet file
    * 
    * @return string
    */
@@ -42,7 +40,7 @@ class Layout extends View {
     $module = array_shift($path);
     $module = app::module($module);  
 
-    return $module->root() . DS . 'layouts' . DS . implode(DS, $path) . '.' . $this->format . '.php';
+    return $module->root() . DS . 'snippets' . DS . implode(DS, $path) . '.' . $this->format . '.php';
 
   }
 

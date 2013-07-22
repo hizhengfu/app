@@ -2,9 +2,6 @@
 
 namespace Kirby\App;
 
-use Kirby\Toolkit\F;
-use Kirby\Toolkit\R;
-
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
@@ -22,317 +19,110 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class Controller {
 
-  // store for all controller data, which will be passed to the view
-  protected $data = array();
-  
-  // the parent list of controllers
-  protected $siblings = null;
+  // the controller name
+  public $name;
 
   // the parent module
-  protected $module = null;
-  
+  public $module;
+
+  // the default layout
+  public $layout;
+
   // the current action
-  protected $action = 'index';
-    
+  public $action;
+
   // the response format
-  protected $format = null;
-  
-  // the controller file
-  protected $file = null;
-  
-  // the assigned layout
-  protected $layout = null;
-  
-  // the assigned view
-  protected $view = null;
+  public $format = 'html';
+
+  // additional arguments for the action
+  public $arguments;
 
   /**
    * Constructor
-   * 
-   * @param string $file The full path to the controller file
-   * @param object Controllers a list of sibling controllers
    */
-  public function __construct($file, Controllers $siblings) {
-
-    $this->file     = $file;
-    $this->siblings = $siblings;
-    $this->module   = $siblings->module();
-    $this->layout   = $this->layout();
-
+  public function __construct() {
+    $this->name = str_replace('controller', '', strtolower(get_called_class()));
   }
 
   /**
-   * Returns all assigned data 
-   * 
-   * @return array
-   */
-  public function data() {
-    return $this->data;
-  }
-
-  /**
-   * Returns the name of the controller
+   * Returns the controller name
    * 
    * @return string
    */
   public function name() {
-    return f::name($this->file, true);
+    return $this->name;
   }
 
   /**
-   * Returns the full file path of the controller
-   *
-   * @return string
-   */
-  public function file() {
-    return $this->file;
-  }
-
-  /**
-   * Magic setter for new data
+   * Returns the parent module object
    * 
-   * @param string $property is set by php 
-   * @param mixed $value 
-   */
-  public function __set($property, $value) {
-    $this->set($property, $value);
-  }
-
-  /**
-   * Sets new data
-   * 
-   * @param string $property
-   * @param mixed $value
-   */
-  public function set($property, $value) {
-    $this->data[$property] = $value;  
-    return $this;
-  }
-
-  /**
-   * Magic getter for data
-   * 
-   * @param string $property set by php
-   * @return mixed
-   */
-  public function __get($property) {
-    return $this->get($property);
-  }
-
-  /**
-   * Magic getter method for data
-   * 
-   * @param string $property set by php
-   * @param mixed $arguments optional arguments. not used!
-   * @return mixed
-   */
-  public function __call($property, $arguments = null) {
-    return $this->get($property);
-  }
-
-  /**
-   * Getter for stored data
-   *
-   * @param string $property
-   * @return mixed
-   */
-  public function get($property) {
-    return isset($this->data[$property]) ? $this->data[$property] : null;
-  }
-
-  /**
-   * Returns the parent module
-   * 
-   * @return object AppModule
+   * @return object
    */
   public function module() {
     return $this->module;
   }
 
   /**
-   * Returns the response format type
+   * Returns the default layout object if available
+   * 
+   * @return object
+   */
+  public function layout() {
+    return $this->layout;
+  }
+
+  /**
+   * Returns the name of the current action
    * 
    * @return string
    */
-  public function format($format = null) {
-    
-    if(!is_null($format)) $this->format = $format;
-
-    if(is_null($this->format)) {  
-      $extension = app()->uri()->extension();
-      $this->format = (empty($extension) or $extension == 'php') ? 'html' : $extension;
-    }
-    
-    return $this->format;
-  
-  }
-
-  /**
-   * Returns the assigned layout object
-   * 
-   * @param string $path Smart path to change the layout
-   * @return object Layout
-   */
-  public function layout($path = null) {
-        
-    if(!is_null($path)) $this->layout = new Layout($path, $this);
-    if(!is_null($this->layout)) return $this->layout;
-    
-    return $this->layout = new Layout($this->module->layout(), $this);
-
-  }
-
-  /**
-   * Returns the view object
-   * 
-   * @param string $path Smart path to change the view
-   * @return object View
-   */
-  public function view($path = null) {
-
-    if(!is_null($path)) return $this->view = new View($path, $this);
-    if(!is_null($this->view)) return $this->view;
-        
-    return $this->view($this->module()->name() . ' > ' . $this->name() . ' > ' . $this->action());
-
-  }
-
-  /**
-   * Stores a flash message to be re-used in the next request
-   * 
-   * @param string $type a type for the flash message if you want to use this as setter. This makes it possible to store different flash messages for different types of stuff (error, notice, etc.)
-   * @param string $message The message which should be stored
-   * @return mixed If no type is specified this will return the last message
-   */
-  public function flash($type = false, $message = false) {
-    return app()->flash($type, $message);  
-  }
- 
-  /**
-   * Redirects to a different path
-   * 
-   * @param string $path A relative path to redirect to
-   */
-  public function redirect($path = '') {                                  
-    go(app()->url($path));
-  }
-
-  /**
-   * Checks if a form has been submitted
-   * The request method and csfr must match
-   *
-   * @param string $method The request method to check for
-   * @return boolean
-   */
-  public function submitted($method = 'post') {
-    return (r::is($method) && app()->csfr(r::get('csfr'))) ? true : false;
-  }
-
-  /**
-   * Respond with a json status object
-   * No view will be rendered afterwards
-   * 
-   * @param mixed $type Either success, error or a saved model
-   * @param string $message An error or success message
-   * @param array $data Optional data for the response
-   * @return string
-   */
-  public function respond($type, $message, $data = array()) {
-
-    // if an entire model is passed, check for failures and build an auto status
-    if(is_a($type, 'model')) {
-
-      if($type->valid()) {
-        return $this->success($message);        
-      } else {
-        return $this->error($type->error());
-      }
-
-    }
-
-    $defaults = array(
-      'status'  => $type,
-      'message' => $message,
-    );    
-    die(json_encode(array_merge($defaults, $data)));
-  }
-
-  /**
-   * Responds with a json success status
-   * 
-   * @param string $message The success message
-   * @param array $data optional data to merge into the response array
-   * @return string
-   */
-  public function success($message = 'Yay!', $data = array()) {
-    $this->respond('success', $message, $data);
-  }
-
-  /**
-   * Responds with a json error status
-   * 
-   * @param string $message The error message
-   * @param array $data optional data to merge into the response array
-   * @return string
-   */
-  public function error($message = 'Oh no!', $data = array()) {
-    $this->respond('error', $message, $data);
-  }
-
-  /**
-   * Returns the currently selected action 
-   * 
-   * @param string $action Optional argument to use this as a setter
-   * @return string Name of the action
-   */
-  public function action($action = null) {
-    if(!is_null($action)) return $this->action = $action;
+  public function action() {
     return $this->action;
   }
 
   /**
-   * Calls the current action and returns the response generated by this controller
+   * Returns the response format
    * 
-   * @return object Response
-   */
-  public function call($action, $options = array()) {
-
-    // set the action
-    $this->action = $action;
-
-    // run the action
-    call_user_func_array(array($this, $action), $options);
-
-    // get the current layout
-    $layout = $this->layout();
-    
-    // apply the content 
-    $layout->content = $this->view()->render();
-
-    // return the response object       
-    return new Response($layout->render(), $this->format());
-
-  }
-
-  /**
-   * Shortcut to work with snippets in controllers
-   * 
-   * @param string $path 
-   * @param array $data
-   * @param boolean $return
    * @return string
    */
-  public function snippet($path, $data = array(), $return = true) {
-    return view::snippet($path, $data, $return);
+  public function format() {
+    return $this->format;
   }
 
   /**
-   * Debugger method to echo the controller's name
+   * Runs the current action and returns the response object
+   * 
+   * @return object
+   */
+  public function run() {
+
+    if(method_exists($this, $this->action)) {
+      $output = call_user_func_array(array($this, $this->action), (array)$this->arguments);
+    } else {
+      raise('invalid controller action: ' . $this->action);
+    }
+
+    // if the controller has a valid layout
+    // render that instead of the output generated by the action
+    if(!$output and $layout = $this->layout) {
+      $output = $layout->render($this->format); 
+    } 
+
+    if(is_a($output, 'Kirby\\App\\Response')) {
+      return $output;
+    } else {
+      return new Response($output, $this->format);
+    }
+
+  }
+
+  /**
+   * Echos the rendered response
    * 
    * @return string
    */
   public function __toString() {
-    return $this->name();
+    return (string)$this->run();
   }
 
 }

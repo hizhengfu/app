@@ -2,14 +2,17 @@
 
 namespace Kirby;
 
+use Exception;
+use Kirby\Toolkit\A;
 use Kirby\Toolkit\C;
+use Kirby\Toolkit\Dir;
+use Kirby\Toolkit\Error;
+use Kirby\Toolkit\Event;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Router;
-use Kirby\Toolkit\S;
-use Kirby\Toolkit\Server;
+use Kirby\Toolkit\Router\Route;
 use Kirby\Toolkit\Str;
 use Kirby\Toolkit\URI;
-use Kirby\App\Modules;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -17,169 +20,299 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
 /**
  * App
  * 
- * The main object, which is used to retrieve all sub objects
- * and to organize some basic functionality. Extend this from your own 
- * app class and define the KIRBY_APP_CLASS constant with the name of your 
- * class to use the global app() singleton helper.
- * 
- * Make sure to check out methods of this class and overwrite them in your
- * app class to have a convenient app initializer. 
- * 
  * @package   Kirby App
  * @author    Bastian Allgeier <bastian@getkirby.com>
  * @link      http://getkirby.com
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class App {
+class App extends Event {
 
-  // Cache for the app subfolder
-  protected $subfolder = null;
-  
-  // Cache for the uri object
-  protected $uri = null;
+  // module instance cache
+  static protected $modules;
     
-  // The main url of the app
-  protected $url = null;
+  // the current active module
+  static protected $module;
   
-  // http or https
-  protected $scheme = null;
-
-  // Cache for the Modules list
-  protected $modules = null;
+  // the current uri object
+  static protected $uri;
   
-  // stores the current module
-  protected $module = null;
-
-  // stores the currently used controller
-  protected $controller = null;
-
-  // stores the called action
-  protected $action = null;
-
-  // stores the route
-  protected $route = null;
+  // all registered routes
+  static protected $routes;
+  
+  // the current route object
+  static protected $route;
+ 
+  // the current app error
+  static protected $error;
 
   /**
-   * Constructor
+   * Returns an array with all modules
    * 
-   * @param array $params An optional array of params to configure the app instance
+   * @return array
    */
-  public function __construct($params = array()) {
+  static public function modules($dir = null) {
 
-    // start a new session
-    s::start();
+    if(!is_null(static::$modules)) return static::$modules;
+    if(is_null($dir)) app::raise('module-installation', 'Module installation failed', 400);
 
-    // check for stored flash messages
-    $this->flash();
+    static::$modules = array();
 
-    // load all configs 
-    $this->configure($params);
-    
+    $modules = dir::read($dir);
+
+    foreach($modules as $module) {
+      if(!is_dir($dir . DS . $module)) continue;
+
+      $file  = $dir . DS . $module . DS . $module . '.php';
+      $class = $module . 'module';
+
+      f::load($file);
+
+      // skip broken modules
+      if(!class_exists($class)) continue;
+
+      // add the new module class
+      static::$modules[$module] = new $class($file);
+
+    }
+
+    return static::$modules;
+
   }
 
   /**
-   * Placeholder for app classes to create global routes
-   */
-  public function routes() {
-    return true;
-  }
-
-  /**
-   * Returns the subfolder(s)
-   * A subfolder will be auto-detected or can be set in the config file
-   * If you run the site under its own domain, the subfolder will be empty
+   * Returns a module class by its name or the current module
    * 
-   * @return string
+   * @return object
    */
-  public function subfolder() {
+  static public function module($name = null) {
 
-    if(!is_null($this->subfolder)) return $this->subfolder;
+    // if no name is specified, return the current module
+    if(is_null($name)) return static::$module;
 
-    // try to detect the subfolder      
-    $subfolder = (c::get('app.subfolder') !== false) ? trim(c::get('app.subfolder'), '/') : trim(dirname(server::get('script_name')), '/\\');
-
-    c::set('app.subfolder', $subfolder);
-
-    return $this->subfolder = $subfolder;
+    // return a specific module
+    return a::get(static::$modules, $name, null);
 
   }
 
   /**
-   * Returns the URI object, which can be used
-   * to inspect and work with the current URL/URI
-   * 
-   * @return object Uri
-   */
-  public function uri() {
-
-    if(!is_null($this->uri)) return $this->uri;
-
-    return $this->uri = new Uri(array(
-      'subfolder' => $this->subfolder(),
-      'url'       => c::get('app.currentURL', null)
-    ));
-
-  }
-
-  /**
-   * Returns the scheme (http or https)
+   * Registers and returns all routes
    *
-   * @return string
+   * @return array
    */
-  public function scheme() {
-    if(!is_null($this->scheme)) return $this->scheme;
-    return $this->uri()->scheme();
+  static public function routes() {
+
+    if(!is_null(static::$routes)) return static::$routes;
+
+    foreach(static::modules() as $module) {
+      // register all routes for each module
+      $module->routes();
+    }
+
+    return static::$routes = router::routes();
+
   }
 
   /**
-   * Returns the base url of the site
-   * The url is auto-detected by default and can 
-   * also be set in the config like the subfolder
+   * Returns the current route object
    * 
-   * @param string $uri Optional path for the URL
+   * @return object
+   */
+  static public function route() {
+    return static::$route;
+  }
+
+  /**
+   * Initiates and returns the app's current uri
+   * 
+   * @return object
+   */
+  static public function uri() {
+    if(!is_null(static::$uri)) return static::$uri;
+    return static::$uri = new URI(array(
+      'subfolder' => c::get('app.subfolder', '@auto'),
+      'strip'     => 'index.php'
+    ));
+  }
+
+  /**
+   * Smart url builder
+   * You can pass the following:
+   * 
+   * 1. nothing or / to get the url of the home page
+   * 2. a simple uri like some/uri to get the full url
+   * 3. a controller path like todos > todos::index to get the url from the router
+   * 
+   * Add arguments to replace placeholders in the url with them.  
+   *
+   * @param string $path
+   * @param array $arguments
    * @return string
    */
-  public function url($uri = null) {
+  static public function url($path = null, $arguments = array()) {
 
-    if(is_null($this->url)) {
+    if(preg_match('!^(http|https)\:\/\/!i', $path)) {
+      return $path;
+    }
+  
+    $baseurl = static::uri()->baseurl();
 
-      // auto-detect the url if it is not set
-      $url = (c::get('app.url') === false) ? $this->scheme() . '://' . $this->uri()->host() : rtrim(c::get('app.url'), '/');
+    // return the home url
+    if(is_null($path) or $path == '/') return $baseurl;
 
-      if($subfolder = $this->subfolder()) {
-        // check if the url already contains the subfolder      
-        // so it's not included twice
-        if(!preg_match('!' . preg_quote($subfolder) . '$!i', $url)) $url .= '/' . $subfolder;      
-      }
-                    
-      c::set('app.url', $url);  
-      $this->url = $url;
+    // controller 
+    if(str::contains($path, '>')) {
+
+      $route = route::findByAction($path);
+
+      // return the home url if nothing could be found
+      if(empty($route)) return static::url();
+
+      // return the final url
+      $url = rtrim($baseurl . '/' . $route->pattern , '/');      
+
+    } else {
+      $url = $baseurl . '/' . ltrim($path, '/');
+    }
+
+    // replace all placeholders in the url with proper arguments
+    if(!empty($arguments)) {
+      
+      // replace all placeholders with %s so it can be used in sprintf later
+      $url = preg_replace('!(\(\:.*?\))!', '%s', $url);
+      
+      // only use the array values from the arguments array
+      $arguments = array_values((array)$arguments);
+
+      // add the pattern as first argument
+      array_unshift($arguments, $url);
+
+      // replace all placeholders with arguments
+      $url = call_user_func_array('sprintf', $arguments);
+    }
+
+    return $url;
+
+  }
+
+  /**
+   * Returns the current app error object if set
+   * 
+   * @return object
+   */
+  static public function error() {
+    return static::$error;
+  }
+
+  /**
+   * Raises a new app error
+   * 
+   * @param string $key
+   * @param string $message
+   * @param int $code
+   */
+  static public function raise($key, $message, $code = null) {
+    $error = error::raise($key, $message, $code);
+    static::trigger('error', $error);
+    exit();
+  }
+
+  /**
+   * Fetches all routes, tries to resolve the current uri 
+   * loads the current module and controller and fires the 
+   * current controller action. 
+   *
+   * @return mixed
+   */
+  static public function dispatch() {
+
+    app::trigger('dispatch:before');
+
+    // register all routes
+    static::routes();
+
+    // get the current route
+    static::$route = router::run(static::uri()->path());
+
+    // check for an existing route and send to the 404 page if no route exists
+    if(!static::$route) return static::raise('page-not-found', 'Page not found', 404);
+
+    // get the router action
+    $action = static::$route->action();
+
+    // check for a route closure 
+    if(is_callable($action)) {
+      
+      // get the result of the router call
+      $result = router::call(static::$route);
+
+      // and pass it to the dispatch:after event
+      app::trigger('dispatch:after', array(&$result));
+      
+      // return the result afterwards
+      return $result;
+
+    } else {
+
+      // parse the string and extract all important parts
+      preg_match('!^(.*?)\>(.*?)\:\:(.*?)$!i', trim($action), $matches);
+
+      $m = trim($matches[1]); // module
+      $c = trim($matches[2]); // controller
+      $a = trim($matches[3]); // action
+
+      $module = static::module($m);
+
+      // check if the module is available
+      if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
+
+      // initial config event for the module
+      $module->config();
+      // setup the module's autoloader
+      $module->autoloader();
+
+      // load the controller file
+      f::load($module->root() . DS . 'controllers' . DS . $c . '.php');
+
+      // create the controller class name
+      $class = $c . 'controller';
+
+      // check if the controller exists
+      if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
+
+      $controller = new $class;
+      $controller->module    = $module;
+      $controller->action    = $a;
+      $controller->arguments = static::$route->arguments();
+
+      // fetch the controller action result
+      $result = $controller->run();
+
+      // and pass it to the dispatch:after event
+      app::trigger('dispatch:after', array(&$result));
+
+      // return the result afterwards
+      return $result;
 
     }
 
-    // make sure to not convert absolute urls  
-    if(preg_match('!^(http|https)!i', $uri)) return $uri;
-    
-    // make sure to avoid additional slashes
-    $uri = trim($uri, '/');
+  }
 
-    // module urls
-    if(str::contains($uri, '>')) {
+  /**
+   * Runs the dispatcher and echos the response
+   */
+  static public function run() {
+    try {
+      $response = static::dispatch();
 
-      $parts  = str::split($uri, '>');
-      $module = $parts[0];
-      $path   = $parts[1];
-
-      return $this->url . '/modules/' . $module . '/' . $path;
-
+      if(is_a($response, 'Kirby\\App\\Response')) {
+        $response->header();
+      } 
+      
+      echo $response;
+    } catch(Exception $e) {
+      static::raise('dispatch-error', $e->getMessage());
     }
-
-    // home
-    if(empty($uri)) return $this->url;
-
-    return $this->url . '/' . $uri;
-
   }
 
   /**
@@ -188,11 +321,11 @@ class App {
    * @param string $path 
    * @return string
    */
-  public function root($path) {
+  static public function root($path) {
 
-    $parts      = str::split($path, '>');
-    $moduleName = $parts[0]; 
-    $module     = $this->modules()->get($moduleName);
+    $parts  = str::split($path, '>');
+    $module = $parts[0]; 
+    $module = static::module($module);
 
     if(!$module) return false;
 
@@ -201,225 +334,19 @@ class App {
   }
 
   /**
-   * Returns a list with all available modules
-   * 
-   * @return object Modules
-   */
-  public function modules() {
-    if(!is_null($this->modules)) return $this->modules;
-    return $this->modules = new Modules();
-  }
-
-  /**
-   * Returns the current module
-   * 
-   * @return object Module
-   */
-  public function module() {
-    return $this->module;
-  }
-
-  /**
-   * Returns the current controller
-   * 
-   * @return object Controller
-   */
-  public function controller() {
-    return $this->controller;
-  }
-
-  /**
-   * Returns the current route
-   * 
-   * @return string
-   */
-  public function action() {
-    return $this->action;
-  }
-
-  /**
-   * Returns the current route
-   * 
-   * @return object Route
-   */
-  public function route() {
-    return $this->route;
-  }
-
-  /**
-   * Checks and sets the flash message
-   * 
-   * @param string $type a type for the flash message if you want to use this as setter. This makes it possible to store different flash messages for different types of stuff (error, notice, etc.)
-   * @param string $message The message which should be stored
-   * @return mixed If no type is specified this will return the last message
-   */
-  public function flash($type = false, $message = false) {
-
-    $flash = s::get('flash', array());
-
-    // check script
-    if(!$type) {
-      foreach($flash as $type => $params) {    
-        if(!$params['viewed']) {
-          $flash[$type]['viewed'] = true;
-        } else {
-          unset($flash[$type]);
-        }
-      }    
-      return s::set('flash', $flash);
-    }
-    
-    // getter
-    if(!$message) {
-      return @$flash[$type]['message'];
-    }
-
-    $flash[$type] = array(
-      'message' => $message,
-      'viewed'  => false
-    );
-
-    s::set('flash', $flash);
-
-  }
-
-  /**
-   * Checks / returns a csfr token
-   * 
-   * @param string $check Pass a token here to compare it to the one in the session
-   * @return mixed Either the token or a boolean check result
-   */
-  public function csfr($check = null) {
-    
-    if(is_null($check)) {
-      $token = str::random(64);
-      s::set('csfr', $token);
-      return $token;
-    }
-
-    return ($check === s::get('csfr')) ? true : false;
-
-  }
-
-  /**
-   * Match the url to a module, controller and action
-   * 
-   * @return string The controller response
-   */
-  public function dispatch() {
-
-    // register all app routes
-    $this->routes();
-
-    // register all module routes
-    foreach($this->modules() as $module) {
-      $module->routes();      
-    }
-
-    // find the currently active route
-    $route = router::match($this->uri()->path());
-
-    // react on missing routes
-    if(!$route) raise('Not found: ' . $this->uri());
-
-    // store the used route
-    $this->route = $route;
-
-    $action     = $route->action();
-    $parts      = str::split($action, '>');
-    $moduleName = $parts[0]; 
-    $module     = $this->modules()->get($moduleName);
-
-    if(!$module) raise('Invalid module: ' . $moduleName);
-
-    // store the current module
-    $this->module = $module;
-
-    $actionParts    = str::split($parts[1], '::');
-    $controllerName = $actionParts[0];
-    $actionName     = $actionParts[1];      
-    $controller     = $module->controllers()->get($controllerName);
-
-    if(!$controller) raise('Invalid controller: ' . $controllerName);
-
-    // store the current controller and action
-    $this->controller = $controller;
-    $this->action     = $actionName;
-
-  }
-
-  /**
-   * Renders the app html
-   */
-  public function show() {
-
-    // get the current user
-    $this->user();
-
-    // find the current controller
-    $this->dispatch();
-
-    // authenticate 
-    $this->authenticate();
-
-    // apply localization and translation settings
-    $this->localize();
-
-    // call the controller action
-    $response = $this->controller()->call($this->action(), $this->route()->options());
-
-    // send the response header
-    $response->header();
-
-    // echo the generated result
-    echo $response->content();
-
-  }
-
-  // protected methods
-
-  /**
-   * Loads all config files 
-   * 
-   * @param array $params An optional array of params, which should be merged
-   */
-  protected function configure($params = array()) {
-    c::set($params);
-  }
-
-  /**
-   * Initializes some basic local settings
-   */  
-  protected function localize() {
-
-    // set the timezone to make sure we 
-    // avoid errors in php 5.3
-    @date_default_timezone_set(c::get('app.timezone', 'UTC'));
-
-  } 
-
-  /**
-   * Dummy authentication method
-   * Should be overwritten by the app
-   */
-  protected function authenticate() {
-    return false;
-  }
-
-  /**
    * A simple loader for collections, models and lib stuff
    * from any module
    * 
    * @param string $path
    */
-  public static function load($path) {
+  static public function load($path) {
 
     if(is_array($path)) {
-      foreach($path as $p) self::load($p);
+      foreach($path as $p) static::load($p);
       return; 
     }
 
-    f::load(app()->root($path . '.php'));
+    f::load(static::root($path . '.php'));
 
   }
 

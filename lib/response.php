@@ -70,7 +70,43 @@ class Response {
    * @return string
    */
   public function __toString() {
-    return $this->content;
+    return (string)$this->content;
+  }
+
+  /**
+   * Returns a success response 
+   * 
+   * @return object
+   */
+  static public function success($message = 'Everything went fine', $data = array(), $code = 200) {
+    return new static(json_encode(array(
+      'status'  => 'success',
+      'code'    => $code,
+      'message' => $message, 
+      'data'    => $data
+    )), 'json');
+  }
+
+  /**
+   * Returns an error response   
+   * 
+   * @return object
+   */
+  static public function error($message = 'Something went wrong', $data = array(), $code = 400) {
+  
+    if(is_a($message, 'Kirby\\Toolkit\\Error')) {      
+      $code    = $message->code();
+      $data    = $message->data();
+      $message = $message->message();
+    }
+
+    return new static(json_encode(array(
+      'status'  => 'error',
+      'code'    => $code,
+      'message' => $message, 
+      'data'    => $data
+    )), 'json');
+
   }
 
 }

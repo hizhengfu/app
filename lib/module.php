@@ -2,7 +2,7 @@
 
 namespace Kirby\App;
 
-use Kirby\Toolkit\Str;
+use Kirby\Toolkit\Autoloader;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -23,33 +23,33 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class Module {
 
-  // a default title which should be passed to the layout
-  protected $title = null;
+  // the module's name
+  public $name;
   
-  // the name of the module
-  protected $name = null;
-
-  // the relative path for the default layout
-  protected $layout = null;
-      
-  // a list of all available controllers
-  protected $controllers = null;
+  // the module class file
+  public $file;
   
-  // stores the current controller
-  protected $controller = null;
-
-  // the module file
-  protected $file = null;
+  // the module root directory
+  public $root;
 
   /**
-   * Register all routes for this module
+   * Contstructor
    */
-  public function routes() {
-    return true;
+  public function __construct($file) {
+
+    // set the module file
+    $this->file = $file;
+
+    // get the name of this module
+    $this->name = str_replace('module', '', strtolower(get_called_class()));
+        
+    // get the module root
+    $this->root = dirname($this->file);
+  
   }
 
   /**
-   * Returns the module name
+   * Returns the name of the module
    * 
    * @return string
    */
@@ -58,102 +58,58 @@ class Module {
   }
 
   /**
-   * Returns the default title for this module, which 
-   * should be passed to the layout
+   * Returns the file path of the module class
    * 
    * @return string
    */
-  public function title() {
-    return !empty($this->title) ? $this->title : str::ucfirst($this->name);
-  }
-
-  /**
-   * Returns the default layout object
-   * 
-   * @return object Layout
-   */
-  public function layout() {
-    return $this->layout;
-  }
-
-  /**
-   * Returns the full path to the module file
-   * 
-   * @param string $file Optional argument to use this as setter
-   * @return string
-   */
-  public function file($file = null) {
-    if(!is_null($file)) return $this->file = $file;
+  public function file() {
     return $this->file;
   }
 
   /**
-   * Returns the module directory root
+   * Returns the root directory of the module
    * 
    * @return string
    */
   public function root() {
-    return dirname($this->file);    
+    return $this->root;
   }
 
   /**
-   * Returns a list with all available controllers for this module
-   * 
-   * @return object Controllers
+   * Registers all routes for this module
    */
-  public function controllers() {
-    if(!is_null($this->controllers)) return $this->controllers;
-    return $this->controllers = new Controllers($this);
+  public function routes() {
+    // Example:
+    // router::get('/', 'mymodule > mycontroller::index');
   }
 
   /**
-   * Returns the currently active controller
-   * 
-   * @return object Controller
+   * Returns the default layout for all controllers in this module
    */
-  public function controller() {
-    if(!is_null($this->controller)) return $this->controller;
-    return $this->controller = ($this->isActive()) ? app()->controller() : null;
+  public function layout() {
+    return null;
   }
 
   /**
-   * Checks if this module is currently active
-   * 
-   * @return boolean
+   * Setup autoloading models
    */
-  public function isActive() {
-    return app()->module()->name() == $this->name();
+  public function autoloader() {
+
+    // start autoloading all models
+    $autoloader = new Autoloader();
+    $autoloader->root = $this->root() . DS . 'models';
+    $autoloader->start();
+
   }
 
   /**
-   * Shortcut to work with snippets in controllers
-   * 
-   * @param string $path 
-   * @param array $data
-   * @param boolean $return
-   * @return string
+   * Custom config event
    */
-  public function snippet($path, $data = array(), $return = true) {
-    return view::snippet($path, $data, $return);
-  }
+  public function config() {}
 
   /**
-   * Dummy method to return the base url of the module
-   * Set this in your model class
-   * 
-   * @return false   
+   * Run event, which can be overwritten by child classes
    */
-  public function url() {
-    return false;
-  }
-
-  /**
-   * Echos the name of the controller
-   * 
-   * @return string
-   */
-  public function __toString() {
-    return $this->name();
-  }
+  public function run() {}
 
 }
