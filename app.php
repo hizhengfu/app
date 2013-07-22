@@ -212,9 +212,56 @@ class App extends Event {
    * @param int $code
    */
   static public function raise($key, $message, $code = null) {
-    $error = error::raise($key, $message, $code);
+    $error = error::raise($key, $message, $data = array(), $code);
     static::trigger('error', $error);
     exit();
+  }
+
+  /**
+   * Get a controller by a smart path (module > controller::index)
+   * 
+   * @param string $path
+   * @param array $arguments
+   * @return object
+   */
+  static public function controller($path, $arguments = array()) {
+
+    // module > controller::action 
+
+    // parse the string and extract all important parts
+    preg_match('!^(.*?)\>(.*?)\:\:(.*?)$!i', trim($path), $matches);
+
+    $m = trim($matches[1]); // module
+    $c = trim($matches[2]); // controller
+    $a = trim($matches[3]); // action
+
+    $module = static::module($m);
+
+    // check if the module is available
+    if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
+
+    // initial config event for the module
+    $module->config();
+    // setup the module's autoloader
+    $module->autoloader();
+
+    // load the controller file
+    f::load($module->root() . DS . 'controllers' . DS . $c . '.php');
+
+    // create the controller class name
+    $class = $c . 'controller';
+
+    // check if the controller exists
+    if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
+
+    $controller = new $class;
+    $controller->module    = $module;
+    $controller->action    = $a;
+    $controller->arguments = $arguments;
+
+    // fetch the controller action result
+    return $controller;
+  
   }
 
   /**
@@ -241,10 +288,10 @@ class App extends Event {
     $action = static::$route->action();
 
     // check for a route closure 
-    if(is_callable($action)) {
+    if(static::$route->isCallable()) {
       
       // get the result of the router call
-      $result = router::call(static::$route);
+      $result = static::$route->call();
 
       // and pass it to the dispatch:after event
       app::trigger('dispatch:after', array(&$result));
@@ -254,39 +301,7 @@ class App extends Event {
 
     } else {
 
-      // parse the string and extract all important parts
-      preg_match('!^(.*?)\>(.*?)\:\:(.*?)$!i', trim($action), $matches);
-
-      $m = trim($matches[1]); // module
-      $c = trim($matches[2]); // controller
-      $a = trim($matches[3]); // action
-
-      $module = static::module($m);
-
-      // check if the module is available
-      if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
-
-      // initial config event for the module
-      $module->config();
-      // setup the module's autoloader
-      $module->autoloader();
-
-      // load the controller file
-      f::load($module->root() . DS . 'controllers' . DS . $c . '.php');
-
-      // create the controller class name
-      $class = $c . 'controller';
-
-      // check if the controller exists
-      if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
-
-      $controller = new $class;
-      $controller->module    = $module;
-      $controller->action    = $a;
-      $controller->arguments = static::$route->arguments();
-
-      // fetch the controller action result
-      $result = $controller->run();
+      $result = static::controller($action, static::$route->arguments())->run();
 
       // and pass it to the dispatch:after event
       app::trigger('dispatch:after', array(&$result));
