@@ -40,7 +40,7 @@ class Snippet extends View {
     $module = array_shift($path);
     $module = app::module($module);  
 
-    return $module->root() . DS . 'snippets' . DS . implode(DS, $path) . '.' . $this->format . '.php';
+    return $module->root() . DS . 'snippets' . DS . implode(DS, $path) . '.php';
 
   }
 

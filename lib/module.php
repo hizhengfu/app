@@ -103,6 +103,11 @@ class Module {
   }
 
   /**
+   * Custom load event
+   */
+  public function load() {}
+
+  /**
    * Custom config event
    */
   public function config() {}
@@ -111,5 +116,13 @@ class Module {
    * Run event, which can be overwritten by child classes
    */
   public function run() {}
+
+  /**
+   * Makes it possible to echo the module object
+   * or use it in smart strings like $this . ' > whatever'
+   */
+  public function __toString() {
+    return $this->name();
+  }
 
 }

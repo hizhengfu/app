@@ -37,6 +37,7 @@ $autoloader->namespace = 'Kirby\\App';
 // add all needed aliases
 $autoloader->aliases = array(  
   'app'         => 'Kirby\\App',
+  'assets'      => 'Kirby\\App\\Assets',
   'controller'  => 'Kirby\\App\\Controller',
   'layout'      => 'Kirby\\App\\Layout',
   'module'      => 'Kirby\\App\\Module',

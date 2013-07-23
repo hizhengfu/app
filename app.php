@@ -13,6 +13,7 @@ use Kirby\Toolkit\Router;
 use Kirby\Toolkit\Router\Route;
 use Kirby\Toolkit\Str;
 use Kirby\Toolkit\URI;
+use Kirby\Toolkit\URL;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -34,6 +35,12 @@ class App extends Event {
   // the current active module
   static protected $module;
   
+  // the current active controller
+  static protected $controller;
+
+  // the current active action
+  static protected $action;
+
   // the current uri object
   static protected $uri;
   
@@ -76,6 +83,12 @@ class App extends Event {
 
     }
 
+    // load all installed modules
+    foreach(static::$modules as $module) {
+      $module->load();
+      $module->autoloader();
+    }
+
     return static::$modules;
 
   }
@@ -93,6 +106,24 @@ class App extends Event {
     // return a specific module
     return a::get(static::$modules, $name, null);
 
+  }
+
+  /**
+   * Returns the currently active controller
+   * 
+   * @return object
+   */
+  static public function controller() {
+    return static::$controller;
+  }
+
+  /**
+   * Returns the currently active action
+   * 
+   * @return string
+   */
+  static public function action() {
+    return static::$action;
   }
 
   /**
@@ -144,16 +175,14 @@ class App extends Event {
    * 3. a controller path like todos > todos::index to get the url from the router
    * 
    * Add arguments to replace placeholders in the url with them.  
+   * 
+   * This can be used with the url::to(), url(), and u() shortcuts
    *
    * @param string $path
    * @param array $arguments
    * @return string
    */
   static public function url($path = null, $arguments = array()) {
-
-    if(preg_match('!^(http|https)\:\/\/!i', $path)) {
-      return $path;
-    }
   
     $baseurl = static::uri()->baseurl();
 
@@ -166,7 +195,7 @@ class App extends Event {
       $route = route::findByAction($path);
 
       // return the home url if nothing could be found
-      if(empty($route)) return static::url();
+      if(empty($route)) return static::url();        
 
       // return the final url
       $url = rtrim($baseurl . '/' . $route->pattern , '/');      
@@ -218,53 +247,6 @@ class App extends Event {
   }
 
   /**
-   * Get a controller by a smart path (module > controller::index)
-   * 
-   * @param string $path
-   * @param array $arguments
-   * @return object
-   */
-  static public function controller($path, $arguments = array()) {
-
-    // module > controller::action 
-
-    // parse the string and extract all important parts
-    preg_match('!^(.*?)\>(.*?)\:\:(.*?)$!i', trim($path), $matches);
-
-    $m = trim($matches[1]); // module
-    $c = trim($matches[2]); // controller
-    $a = trim($matches[3]); // action
-
-    $module = static::module($m);
-
-    // check if the module is available
-    if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
-
-    // initial config event for the module
-    $module->config();
-    // setup the module's autoloader
-    $module->autoloader();
-
-    // load the controller file
-    f::load($module->root() . DS . 'controllers' . DS . $c . '.php');
-
-    // create the controller class name
-    $class = $c . 'controller';
-
-    // check if the controller exists
-    if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
-
-    $controller = new $class;
-    $controller->module    = $module;
-    $controller->action    = $a;
-    $controller->arguments = $arguments;
-
-    // fetch the controller action result
-    return $controller;
-  
-  }
-
-  /**
    * Fetches all routes, tries to resolve the current uri 
    * loads the current module and controller and fires the 
    * current controller action. 
@@ -274,9 +256,6 @@ class App extends Event {
   static public function dispatch() {
 
     app::trigger('dispatch:before');
-
-    // register all routes
-    static::routes();
 
     // get the current route
     static::$route = router::run(static::uri()->path());
@@ -301,7 +280,43 @@ class App extends Event {
 
     } else {
 
-      $result = static::controller($action, static::$route->arguments())->run();
+      // module > controller::action 
+
+      // parse the string and extract all important parts
+      preg_match('!^(.*?)\>(.*?)\:\:(.*?)$!i', trim($action), $matches);
+
+      $m = trim($matches[1]); // module
+      $c = trim($matches[2]); // controller
+      $a = trim($matches[3]); // action
+
+      $module = static::module($m);
+
+      // check if the module is available
+      if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
+
+      // initial config event for the module
+      $module->config();
+
+      // load the controller file
+      f::load($module->root() . DS . 'controllers' . DS . $c . '.php');
+
+      // create the controller class name
+      $class = $c . 'controller';
+
+      // check if the controller exists
+      if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
+
+      $controller = new $class;
+      $controller->module    = $module;
+      $controller->action    = $a;
+      $controller->arguments = static::$route->arguments();
+
+      static::$module     = $module;
+      static::$controller = $controller;
+      static::$action     = $a;
+
+      // run the controller action and return the result
+      $result = $controller->run();
 
       // and pass it to the dispatch:after event
       app::trigger('dispatch:after', array(&$result));
@@ -314,10 +329,35 @@ class App extends Event {
   }
 
   /**
+   * App configuration
+   */
+  static public function configure() {
+    
+    // register all routes
+    static::routes();
+
+    // default url handling
+    url::$home = app::uri()->baseurl();
+    url::$to   = function() {
+      return call_user_func_array(array('app', 'url'), func_get_args());
+    };
+
+    // let users overwrite/add their own configuration with an event
+    app::trigger('configure');
+
+  }
+
+  /**
    * Runs the dispatcher and echos the response
    */
   static public function run() {
+    
     try {
+      
+      // run app configuration
+      app::configure();
+
+      // call the dispatcher
       $response = static::dispatch();
 
       if(is_a($response, 'Kirby\\App\\Response')) {
