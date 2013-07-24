@@ -120,7 +120,7 @@ class PostsController extends Controller {
 
     $post = post::where('slug', '=', $slug)->first();
   
-    if(!$post) app::raise('not-found', 'The article could not be found');
+    if(!$post) raise('The article could not be found', 404);
 
     return $post;
 

@@ -17,7 +17,7 @@ app::modules(__DIR__ . DS . 'modules');
 
 // register an error handler for all major app errors
 app::on('error', function($error) {
-  dump($error->message());
+  dump($error);
 });
 
 // run the app

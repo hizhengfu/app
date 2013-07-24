@@ -2,6 +2,8 @@
 
 namespace Kirby\App;
 
+use Kirby\Toolkit\Response;
+
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
 
@@ -108,7 +110,7 @@ class Controller {
       $output = $layout->render($this->format); 
     } 
 
-    if(is_a($output, 'Kirby\\App\\Response')) {
+    if(is_a($output, 'Kirby\\Toolkit\\Response')) {
       return $output;
     } else {
       return new Response($output, $this->format);

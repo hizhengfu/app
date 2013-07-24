@@ -2,8 +2,9 @@
 
 namespace Kirby\App;
 
-use Kirby\Toolkit\Str;
 use Kirby\App;
+use Kirby\Toolkit\Str;
+use Kirby\Toolkit\Template;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -20,10 +21,13 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class Snippet extends View {
+class Snippet extends Template {
 
   // registered filters for layouts
   static public $filters = array();
+
+  // the custom root handler
+  static public $root = null;
 
   /**
    * Returns the full path to the snippet file
@@ -33,7 +37,7 @@ class Snippet extends View {
   public function file() {
 
     // make it possible to load a layout file directly
-    if(file_exists($this->path)) return $this->path;
+    if(is_file($this->path)) return $this->path;
 
     // module > layout
     $path   = str::split($this->path, '>'); 

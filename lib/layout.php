@@ -2,8 +2,9 @@
 
 namespace Kirby\App;
 
-use Kirby\Toolkit\Str;
 use Kirby\App;
+use Kirby\Toolkit\Str;
+use Kirby\Toolkit\Template;
 
 // direct access protection
 if(!defined('KIRBY')) die('Direct access is not allowed');
@@ -22,27 +23,34 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class Layout extends View {
+class Layout extends Template {
 
   // registered filters for layouts
   static public $filters = array();
 
+  // the custom layout root
+  static public $root = null;
+
   /**
-   * Returns the full path to the layout file
+   * Returns the layout file
    * 
    * @return string
    */
   public function file() {
 
     // make it possible to load a layout file directly
-    if(file_exists($this->path)) return $this->path;
+    if(is_file($this->path)) return $this->path;
+
+    // fallback for the format
+    if(empty($this->format)) $this->format = 'html';
 
     // module > layout
     $path   = str::split($this->path, '>'); 
     $module = array_shift($path);
     $module = app::module($module);  
+    $root   = $module->root() . DS . 'layouts' . DS . implode(DS, $path) . '.' . $this->format . '.php';
 
-    return $module->root() . DS . 'layouts' . DS . implode(DS, $path) . '.' . $this->format . '.php';
+    return (is_file($root)) ? $root : parent::file();
 
   }
 

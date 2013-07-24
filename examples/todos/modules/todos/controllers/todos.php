@@ -55,7 +55,7 @@ class TodosController extends Controller {
 
   protected function todo($id) {
     $todo = todo::find($id);
-    if(!$todo) app::raise('todo-not-found', 'The todo could not be found');
+    if(!$todo) raise('The todo could not be found', 404);
     return $todo;
   }
 

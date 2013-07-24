@@ -13,8 +13,8 @@ require('config.php');
 app::modules(__DIR__ . DS . 'modules');
 
 // register an error handler for all major app errors
-app::on('error', function($error) {
-  dump($error->message());
+app::on('error', function($exception) {    
+  echo response::error($exception);
 });
 
 // run the app

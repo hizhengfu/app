@@ -41,8 +41,6 @@ $autoloader->aliases = array(
   'controller'  => 'Kirby\\App\\Controller',
   'layout'      => 'Kirby\\App\\Layout',
   'module'      => 'Kirby\\App\\Module',
-  'redirect'    => 'Kirby\\App\\Redirect',
-  'response'    => 'Kirby\\App\\Response',
   'snippet'     => 'Kirby\\App\\Snippet',
   'view'        => 'Kirby\\App\\View',
 );
@@ -55,3 +53,13 @@ require_once(KIRBY_APP_ROOT . DS . 'app.php');
 
 // load the default config values
 require_once(KIRBY_APP_ROOT . DS . 'defaults.php');
+
+// catch all errors and throw an exception so it can get caught by the app's error event
+set_error_handler(function($errno, $errstr, $errfile, $errline) {
+  throw new ErrorException($errstr, 0, $errno, $errfile, $errline);  
+});
+
+// catch all exceptions with the app's error event
+set_exception_handler(function($exception) {
+  app::trigger('error', $exception);
+});

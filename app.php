@@ -2,13 +2,11 @@
 
 namespace Kirby;
 
-use Exception;
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\C;
 use Kirby\Toolkit\Dir;
-use Kirby\Toolkit\Error;
-use Kirby\Toolkit\Event;
 use Kirby\Toolkit\F;
+use Kirby\Toolkit\Response;
 use Kirby\Toolkit\Router;
 use Kirby\Toolkit\Router\Route;
 use Kirby\Toolkit\Str;
@@ -27,7 +25,10 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @copyright Bastian Allgeier
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
-class App extends Event {
+class App {
+
+  // all registered app events
+  static public $events = array();
 
   // module instance cache
   static protected $modules;
@@ -50,9 +51,6 @@ class App extends Event {
   // the current route object
   static protected $route;
  
-  // the current app error
-  static protected $error;
-
   /**
    * Returns an array with all modules
    * 
@@ -61,7 +59,7 @@ class App extends Event {
   static public function modules($dir = null) {
 
     if(!is_null(static::$modules)) return static::$modules;
-    if(is_null($dir)) app::raise('module-installation', 'Module installation failed', 400);
+    if(is_null($dir)) raise('Module installation failed');
 
     static::$modules = array();
 
@@ -225,28 +223,6 @@ class App extends Event {
   }
 
   /**
-   * Returns the current app error object if set
-   * 
-   * @return object
-   */
-  static public function error() {
-    return static::$error;
-  }
-
-  /**
-   * Raises a new app error
-   * 
-   * @param string $key
-   * @param string $message
-   * @param int $code
-   */
-  static public function raise($key, $message, $code = null) {
-    $error = error::raise($key, $message, $data = array(), $code);
-    static::trigger('error', $error);
-    exit();
-  }
-
-  /**
    * Fetches all routes, tries to resolve the current uri 
    * loads the current module and controller and fires the 
    * current controller action. 
@@ -261,7 +237,7 @@ class App extends Event {
     static::$route = router::run(static::uri()->path());
 
     // check for an existing route and send to the 404 page if no route exists
-    if(!static::$route) return static::raise('page-not-found', 'Page not found', 404);
+    if(!static::$route) raise('Page not found', 404);
 
     // get the router action
     $action = static::$route->action();
@@ -292,7 +268,7 @@ class App extends Event {
       $module = static::module($m);
 
       // check if the module is available
-      if(!$module) return static::raise('invalid-module', 'Invalid module: ' . $m, 400);
+      if(!$module) raise('Invalid module: ' . $m);
 
       // initial config event for the module
       $module->config();
@@ -304,7 +280,7 @@ class App extends Event {
       $class = $c . 'controller';
 
       // check if the controller exists
-      if(!class_exists($class)) return static::raise('invalid-controller', 'Invalid controller: ' . $c, 400);
+      if(!class_exists($class)) raise('Invalid controller: ' . $c);
 
       $controller = new $class;
       $controller->module    = $module;
@@ -351,23 +327,19 @@ class App extends Event {
    * Runs the dispatcher and echos the response
    */
   static public function run() {
+          
+    // run app configuration
+    app::configure();
+
+    // call the dispatcher
+    $response = static::dispatch();
+
+    if(is_a($response, 'Kirby\\Toolkit\\Response')) {
+      $response->header();
+    } 
     
-    try {
-      
-      // run app configuration
-      app::configure();
+    echo $response;
 
-      // call the dispatcher
-      $response = static::dispatch();
-
-      if(is_a($response, 'Kirby\\App\\Response')) {
-        $response->header();
-      } 
-      
-      echo $response;
-    } catch(Exception $e) {
-      static::raise('dispatch-error', $e->getMessage());
-    }
   }
 
   /**
@@ -403,6 +375,38 @@ class App extends Event {
 
     f::load(static::root($path . '.php'));
 
+  }
+
+  /**
+   * Registers a new app event
+   * 
+   * @param string $event The name of the event
+   * @param closure $callback The callback function
+   */
+  static public function on($event, $callback) {
+    static::$events[$event] = $callback;
+  }
+
+  /**
+   * Triggers a registered event if it exists
+   * 
+   * @param string $event The name of the event
+   * @param array $arguments Optional arguments which should be passed to the event
+   * @return mixed
+   */
+  static public function trigger($event, $arguments = array()) {
+    if(!isset(static::$events[$event]) or !is_callable(static::$events[$event])) return false;
+    if(!is_array($arguments)) $arguments = array($arguments);
+    return call_user_func_array(static::$events[$event], $arguments);
+  }
+
+  /**
+   * Returns all registered events
+   * 
+   * @return array
+   */
+  static public function events() {
+    return static::$events;
   }
 
 }
