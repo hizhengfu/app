@@ -25,6 +25,9 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class View extends Template {
 
+  // global variables for all views
+  static public $globals = array();
+
   // registered filters for views
   static public $filters = array();
 

@@ -23,6 +23,9 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class Snippet extends Template {
 
+  // global variables for all snippets
+  static public $globals = array();
+
   // registered filters for layouts
   static public $filters = array();
 

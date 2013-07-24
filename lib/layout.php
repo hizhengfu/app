@@ -25,6 +25,9 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  */
 class Layout extends Template {
 
+  // global variables for all layouts
+  static public $globals = array();
+
   // registered filters for layouts
   static public $filters = array();
 
