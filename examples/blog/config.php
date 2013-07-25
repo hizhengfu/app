@@ -1,12 +1,8 @@
 <?php
-
-// define some constants
-define('KIRBY_BLOG_ROOT',      __DIR__);
-define('KIRBY_BLOG_ROOT_DATA', KIRBY_BLOG_ROOT . DS . 'data');
   
 // connect the database
 db::connect(array(
-  'database' => KIRBY_BLOG_ROOT_DATA . DS . 'blog.sqlite', 
+  'database' => __DIR__ . DS . 'data' . DS . 'blog.sqlite', 
   'type'     => 'sqlite'
 ));
 
