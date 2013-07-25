@@ -5,6 +5,7 @@ namespace Kirby;
 use Kirby\Toolkit\A;
 use Kirby\Toolkit\C;
 use Kirby\Toolkit\Dir;
+use Kirby\Toolkit\Event;
 use Kirby\Toolkit\F;
 use Kirby\Toolkit\Response;
 use Kirby\Toolkit\Router;
@@ -26,9 +27,6 @@ if(!defined('KIRBY')) die('Direct access is not allowed');
  * @license   http://www.opensource.org/licenses/mit-license.php MIT License
  */
 class App {
-
-  // all registered app events
-  static public $events = array();
 
   // module instance cache
   static protected $modules;
@@ -231,7 +229,7 @@ class App {
    */
   static public function dispatch() {
 
-    app::trigger('dispatch:before');
+    event::trigger('kirby.app.dispatch:before');
 
     // get the current route
     static::$route = router::run(static::uri()->path());
@@ -249,7 +247,7 @@ class App {
       $result = static::$route->call();
 
       // and pass it to the dispatch:after event
-      app::trigger('dispatch:after', array(&$result));
+      event::trigger('kirby.app.dispatch:after', array(&$result));
       
       // return the result afterwards
       return $result;
@@ -295,7 +293,7 @@ class App {
       $result = $controller->run();
 
       // and pass it to the dispatch:after event
-      app::trigger('dispatch:after', array(&$result));
+      event::trigger('kirby.app.dispatch:after', array(&$result));
 
       // return the result afterwards
       return $result;
@@ -305,39 +303,27 @@ class App {
   }
 
   /**
-   * App configuration
-   */
-  static public function configure() {
-    
-    // register all routes
-    static::routes();
-
-    // default url handling
-    url::$home = app::uri()->baseurl();
-    url::$to   = function() {
-      return call_user_func_array(array('app', 'url'), func_get_args());
-    };
-
-    // let users overwrite/add their own configuration with an event
-    app::trigger('configure');
-
-  }
-
-  /**
    * Runs the dispatcher and echos the response
    */
   static public function run() {
-          
-    // run app configuration
-    app::configure();
 
+    // register all routes
+    static::routes();
+
+    // trigger the configuration event
+    event::trigger('kirby.app.configure');
+          
     // call the dispatcher
     $response = static::dispatch();
 
     if(is_a($response, 'Kirby\\Toolkit\\Response')) {
       $response->header();
     } 
-    
+
+    // make it possible to work with the repsone before it gets echoed
+    event::trigger('kirby.app.response', array(&$response));
+  
+    // send the response to the user    
     echo $response;
 
   }
@@ -375,38 +361,6 @@ class App {
 
     f::load(static::root($path . '.php'));
 
-  }
-
-  /**
-   * Registers a new app event
-   * 
-   * @param string $event The name of the event
-   * @param closure $callback The callback function
-   */
-  static public function on($event, $callback) {
-    static::$events[$event] = $callback;
-  }
-
-  /**
-   * Triggers a registered event if it exists
-   * 
-   * @param string $event The name of the event
-   * @param array $arguments Optional arguments which should be passed to the event
-   * @return mixed
-   */
-  static public function trigger($event, $arguments = array()) {
-    if(!isset(static::$events[$event]) or !is_callable(static::$events[$event])) return false;
-    if(!is_array($arguments)) $arguments = array($arguments);
-    return call_user_func_array(static::$events[$event], $arguments);
-  }
-
-  /**
-   * Returns all registered events
-   * 
-   * @return array
-   */
-  static public function events() {
-    return static::$events;
   }
 
 }

@@ -22,8 +22,9 @@ if(!defined('KIRBY_TOOLKIT_ROOT')) die('The Kirby Toolkit is required for the Ki
  * to change essential roots
  */
 
-if(!defined('KIRBY_APP_ROOT'))     define('KIRBY_APP_ROOT',     __DIR__);
-if(!defined('KIRBY_APP_ROOT_LIB')) define('KIRBY_APP_ROOT_LIB', KIRBY_APP_ROOT . DS . 'lib');
+if(!defined('KIRBY_APP_ROOT'))        define('KIRBY_APP_ROOT',        __DIR__);
+if(!defined('KIRBY_APP_ROOT_LIB'))    define('KIRBY_APP_ROOT_LIB',    KIRBY_APP_ROOT . DS . 'lib');
+if(!defined('KIRBY_APP_ROOT_CONFIG')) define('KIRBY_APP_ROOT_CONFIG', KIRBY_APP_ROOT . DS . 'config');
 
 // initialize the autoloader
 $autoloader = new Kirby\Toolkit\Autoloader();
@@ -52,7 +53,10 @@ $autoloader->start();
 require_once(KIRBY_APP_ROOT . DS . 'app.php');
 
 // load the default config values
-require_once(KIRBY_APP_ROOT . DS . 'defaults.php');
+require_once(KIRBY_APP_ROOT_CONFIG . DS . 'defaults.php');
+
+// load the default events
+require_once(KIRBY_APP_ROOT_CONFIG . DS . 'events.php');
 
 // catch all errors and throw an exception so it can get caught by the app's error event
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
@@ -61,5 +65,5 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 
 // catch all exceptions with the app's error event
 set_exception_handler(function($exception) {
-  app::trigger('error', $exception);
+  event::trigger('kirby.app.error', $exception);
 });
