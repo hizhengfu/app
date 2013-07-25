@@ -15,7 +15,6 @@ event::on('kirby.toolkit.url.home', function(&$url) {
  * You can pass route names or action strings
  */
 event::on('kirby.toolkit.url.to', function(&$url, $arguments = array()) {
-  array_unshift($arguments, $url);
   $url = call_user_func_array(array('app', 'url'), $arguments);
 });
 
@@ -46,7 +45,7 @@ event::on('kirby.toolkit.html.stylesheet', function(&$href, &$media = null, &$at
  */
 event::on('kirby.toolkit.html.script', function(&$src, &$attr = array()) {
 
-  if($href != '@auto') return false;
+  if($src != '@auto') return false;
     
   $module     = app::module();
   $controller = app::controller();

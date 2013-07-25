@@ -188,6 +188,9 @@ class App {
     // controller 
     if(str::contains($path, '>')) {
 
+      // make sure all routes are registered
+      static::routes();
+
       $route = route::findByAction($path);
 
       // return the home url if nothing could be found
