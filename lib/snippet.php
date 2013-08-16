@@ -47,6 +47,8 @@ class Snippet extends Template {
     $module = array_shift($path);
     $module = app::module($module);  
 
+    if(!$module) return false;
+
     return $module->root() . DS . 'snippets' . DS . implode(DS, $path) . '.php';
 
   }

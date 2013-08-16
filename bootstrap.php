@@ -58,6 +58,7 @@ require_once(KIRBY_APP_ROOT_CONFIG . DS . 'defaults.php');
 // load the default events
 require_once(KIRBY_APP_ROOT_CONFIG . DS . 'events.php');
 
+/*
 // catch all errors and throw an exception so it can get caught by the app's error event
 set_error_handler(function($errno, $errstr, $errfile, $errline) {
   throw new ErrorException($errstr, 0, $errno, $errfile, $errline);  
@@ -67,3 +68,4 @@ set_error_handler(function($errno, $errstr, $errfile, $errline) {
 set_exception_handler(function($exception) {
   event::trigger('kirby.app.error', $exception);
 });
+*/

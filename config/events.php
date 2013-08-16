@@ -37,7 +37,7 @@ event::on('kirby.toolkit.html.stylesheet', function(&$href, &$media = null, &$at
 
   $href = 'assets/css/' . $module->name() . '/' . $path;
 
-});
+}, true);
 
 /**
  * Enables smart auto-loading of javascript files
@@ -56,9 +56,9 @@ event::on('kirby.toolkit.html.script', function(&$src, &$attr = array()) {
 
   if(!file_exists($file)) raise('The javascrip file does not exist');
 
-  $href = 'assets/js/' . $module->name() . '/' . $path;
+  $src = 'assets/js/' . $module->name() . '/' . $path;
 
-});
+}, true);
 
 /**
  * Register the default error event
