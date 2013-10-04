@@ -35,7 +35,7 @@ event::on('kirby.toolkit.html.stylesheet', function(&$href, &$media = null, &$at
 
   if(!file_exists($file)) raise('The css file does not exist');
 
-  $href = 'assets/css/' . $module->name() . '/' . $path;
+  $href = 'assets/css/' . $module->name() . '/' . (DS == '/' ? $path : str_replace(DS, '/', $path));
 
 }, true);
 
@@ -56,7 +56,7 @@ event::on('kirby.toolkit.html.script', function(&$src, &$attr = array()) {
 
   if(!file_exists($file)) raise('The javascrip file does not exist');
 
-  $src = 'assets/js/' . $module->name() . '/' . $path;
+  $src = 'assets/js/' . $module->name() . '/' . (DS == '/' ? $path : str_replace(DS, '/', $path));
 
 }, true);
 
